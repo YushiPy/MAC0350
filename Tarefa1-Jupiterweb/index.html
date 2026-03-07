@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Jupiter</title>
+	<style>
+		.banner {
+			width: 100%;
+			height: 8px;
+			background: rgb(244, 185, 64);
+		}
+
+		#banner1 {
+			background: rgb(244, 185, 64);
+		}
+
+		#banner2 {
+			background: rgb(89, 195, 209);
+		}
+
+		#banner3 {
+			background: rgb(65, 147, 170);
+			height: 16px;
+		}
+
+		.link-box {
+			display: flex;
+			flex-direction: column;
+			padding: 10px;
+			
+			background-color: rgb(251, 251, 251);
+			
+			border-color: black;
+			border-width: 1px;
+			border-style: solid;
+		}
+
+		
+		.link-item {
+			border: 1px solid transparent;   /* prevents layout jumps */
+			padding: 3px 3px;                /* optional: makes it look nicer */
+			cursor: pointer;                 /* matches web conventions */
+		}
+		
+		.link-item:hover {
+			border-color: gray;              /* the hover effect */
+		}
+
+		.seção-principal {
+			display: flex;
+			gap: 5vw;
+			flex-direction: row;
+			flex: 1;
+		}
+
+		.login {
+			display: flex;
+			flex-direction: column;
+			height:fit-content;
+			margin-top: 1vh;
+			padding: 3vw;
+
+			align-items: center;   /* add this if you also want horizontal centering */
+			flex: 1;               /* crucial — makes it expand and occupy the rest of the width */
+			border-color: black;
+			border-style: solid;
+			border-width: 1px;
+		}
+
+		.linha {
+			width: 100%;
+			height: 1px;
+			background: rgb(89, 195, 209);
+			margin-top: 20px;
+		}
+
+		header {
+			width: 100%;
+			height: fit-content;
+		}
+
+		.imagens {
+			display: flex;
+			flex-direction: row;
+			gap: 20px;
+			padding: 10px;
+			align-items: center;
+		}
+
+		body {
+			height: 100vh;
+			display: flex;
+			flex-direction: column;
+		}
+		
+		form {
+			width: 10vw;
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+		}
+
+		#lb1 {
+			margin-top: 2vh;
+		}
+
+		#lb2 {
+			margin-top: 1vh;
+		}
+	</style>
+</head>
+
+<body>
+	<header>
+		<div class="imagens">
+			<div class="imagem", id="img1">
+				<img src="https://uspdigital.usp.br/comumwebdev/imagens/cabecalho/usp-logo.png" alt="Logo da USP" class="logo">
+			</div>
+			<div class="imagem", id="img2">
+				<img src="https://uspdigital.usp.br/comumwebdev/imagens/cabecalho/usp-logo-texto.png" alt="Texto da USP" class="logo">
+			</div>
+		</div>
+		<div class="banner", id="banner1"></div>
+		<div class="banner", id="banner2"></div>
+		<div class="banner", id="banner3"></div>
+	</header>
+	<div class="seção-principal">
+		<nav>
+			<div class="link-box", id="lb1">
+				<div class="link-item">> Calendário Escolar</div>
+				<div class="link-item">> Cursos de Ingresso</div>
+				<div class="link-item">> Disciplina</div>
+				<div class="link-item">> Editais</div>
+				<div class="link-item">> FAQ</div>
+			</div>
+			<div class="link-box", id="lb2">
+				<div class="link-item">Link1</div>
+				<div class="link-item">Link2</div>
+				<div class="link-item">Link3</div>
+				<div class="link-item">Link4</div>
+			</div>
+		</nav>
+		<div class="login">
+			<form>
+				<input type="name" placeholder="Usuário">
+				<input type="password" placeholder="Senha">
+				<button type="submit">Entrar</button>
+			</form>
+		</div>
+
+	</div>
+</body>
+
+</html>
