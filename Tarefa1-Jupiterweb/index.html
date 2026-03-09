@@ -1,156 +1,223 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Jupiter</title>
-	<style>
-		.banner {
-			width: 100%;
-			height: 8px;
-			background: rgb(244, 185, 64);
-		}
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<title>Jupiterweb</title>
+		
+		<style>
 
-		#banner1 {
-			background: rgb(244, 185, 64);
-		}
+			p {
+				font-family: Arial, Helvetica, sans-serif;
+			}
 
-		#banner2 {
-			background: rgb(89, 195, 209);
-		}
-
-		#banner3 {
-			background: rgb(65, 147, 170);
-			height: 16px;
-		}
-
-		.link-box {
-			display: flex;
-			flex-direction: column;
-			padding: 10px;
+			button {
+				font-family: Arial, Helvetica, sans-serif;
+			}
 			
-			background-color: rgb(251, 251, 251);
+			.header {
+				display: flex;
+				flex-direction: column;
+				height: 13vh;
+				width: 100%;
+				margin-bottom: 2vh;
+			}
+
+			.header-imagens {
+				display: flex;
+				height: 8vh;
+				width: 100%;
+				align-items: flex-end;
+				margin-bottom: 1vh;
+			}
 			
-			border-color: black;
-			border-width: 1px;
-			border-style: solid;
-		}
+			.usp-logo {
+				display: flex;
+				height: 100%;
+				width: auto;
+				margin-right: 5vw;
+				margin-left: 5vw;
+			}
 
-		
-		.link-item {
-			border: 1px solid transparent;   /* prevents layout jumps */
-			padding: 3px 3px;                /* optional: makes it look nicer */
-			cursor: pointer;                 /* matches web conventions */
-		}
-		
-		.link-item:hover {
-			border-color: gray;              /* the hover effect */
-		}
+			.usp-logo-texto {
+				display: flex;
+				height: 80%;
+				width: auto;
+			}
 
-		.seção-principal {
-			display: flex;
-			gap: 5vw;
-			flex-direction: row;
-			flex: 1;
-		}
+			.barras {
+				display: flex;
+				flex-direction: column;
+				height: 4vh;
+				width: 100%;
+				background-color: rgb(0, 0, 0);
+			}
 
-		.login {
-			display: flex;
-			flex-direction: column;
-			height:fit-content;
-			margin-top: 1vh;
-			padding: 3vw;
+			.barra {
+				flex: 1;
+				width: 100%;
+				background-color: rgb(0, 0, 0);
+			}
 
-			align-items: center;   /* add this if you also want horizontal centering */
-			flex: 1;               /* crucial — makes it expand and occupy the rest of the width */
-			border-color: black;
-			border-style: solid;
-			border-width: 1px;
-		}
+			#barra1 {
+				background: rgb(244, 185, 64);
+			}
+			#barra2 {
+				background: rgb(89, 195, 209);
+			}
+			#barra3 {
+				flex: 2;
+				background: rgb(65, 147, 170);
+			}
 
-		.linha {
-			width: 100%;
-			height: 1px;
-			background: rgb(89, 195, 209);
-			margin-top: 20px;
-		}
+			.corpo {
+				display: flex;
+				flex-direction: row;
+				height: 100%;
+				width: 100%;
+			}
 
-		header {
-			width: 100%;
-			height: fit-content;
-		}
+			.menu-publico, .menu-restrito {
+				display: flex;
+				flex-direction: column;
+				gap: 1px;
+				margin-bottom: 2vh;
+				align-items: flex-start;
+				border: 1px solid #CCCCCC;
+				padding: 2px;
+				width: 200px;
+			}
 
-		.imagens {
-			display: flex;
-			flex-direction: row;
-			gap: 20px;
-			padding: 10px;
-			align-items: center;
-		}
+			.texto-acima {
+				font-size: 13px;
+				background-color: #CCCCCC;
+				color: white;
+				border: none;
+				width: 100%;
+				margin: 0;
+				margin-bottom: 0;
+				padding: 6px 6px 6px 6px;
+				text-align: left;
+				font-weight: bold;
+			}
 
-		body {
-			height: 100vh;
-			display: flex;
-			flex-direction: column;
-		}
-		
-		form {
-			width: 10vw;
-			display: flex;
-			flex-direction: column;
-			gap: 10px;
-		}
+			.opcao {
+				font-size: 13px;
+				background-color: white;
+				border: none;
+				width: 100%;
+				text-align: left;
+				padding: 6px;
 
-		#lb1 {
-			margin-top: 2vh;
-		}
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				cursor: pointer;
+			}
 
-		#lb2 {
-			margin-top: 1vh;
-		}
-	</style>
-</head>
+			.opcao:hover {
+				background-color: rgb(214, 214, 214);
+			}
 
-<body>
-	<header>
-		<div class="imagens">
-			<div class="imagem", id="img1">
-				<img src="https://uspdigital.usp.br/comumwebdev/imagens/cabecalho/usp-logo.png" alt="Logo da USP" class="logo">
+			.conteudo {
+				display: flex;
+				flex-direction: column;
+				gap: 1vh;
+				width: 100%;
+				padding: 0 2vw;
+			}
+
+			.titulo-conteudo {
+				font-size: 12px;
+				margin-bottom: 0vh;
+				margin-top: 0;
+			}
+
+			.barra-preta {
+				width: 100%;
+				height: 1px;
+				background-color: black;
+			}
+
+			.login-form {
+				display: flex;
+				flex-direction: column;
+				width: 100%;
+				align-items: center;
+			}
+
+			.login-info {
+				margin: 0;
+				margin-bottom: 1vh;
+			}
+
+			.login-button {
+				background-color: rgb(0, 98, 255);
+				color: white;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+			}
+
+			.texto-abaixo {
+				font-size: 13px;
+				text-align: center;
+				color: rgb(100, 100, 100);
+			}
+
+		</style>
+
+	</head>
+
+	<body>
+		<div class="header">
+			<div class="header-imagens">
+				<img class="usp-logo" src="usp-logo.png">
+				<img class="usp-logo-texto" src="usp-logo-texto.png">
 			</div>
-			<div class="imagem", id="img2">
-				<img src="https://uspdigital.usp.br/comumwebdev/imagens/cabecalho/usp-logo-texto.png" alt="Texto da USP" class="logo">
+			<div class="barras">
+				<div class="barra" id="barra1"></div>
+				<div class="barra" id="barra2"></div>
+				<div class="barra" id="barra3"></div>
 			</div>
 		</div>
-		<div class="banner", id="banner1"></div>
-		<div class="banner", id="banner2"></div>
-		<div class="banner", id="banner3"></div>
-	</header>
-	<div class="seção-principal">
-		<nav>
-			<div class="link-box", id="lb1">
-				<div class="link-item">> Calendário Escolar</div>
-				<div class="link-item">> Cursos de Ingresso</div>
-				<div class="link-item">> Disciplina</div>
-				<div class="link-item">> Editais</div>
-				<div class="link-item">> FAQ</div>
+		<div class="corpo">
+			<div class="menu">
+				<div class="menu-publico">
+					<button class="texto-acima">Público</button>
+					<button class="opcao">Calendário Escolar <img class="seta" src="arrow_sub1.gif"></button>
+					<button class="opcao">Cursos de Ingresso</button>					
+					<button class="opcao">Disciplina <img class="seta" src="arrow_sub1.gif"></button>
+					<button class="opcao">Editais <img class="seta" src="arrow_sub1.gif"></button>					
+					<button class="opcao">FAQ <img class="seta" src="arrow_sub1.gif"></button>
+				</div>
+				<div class="menu-restrito">
+					<button class="texto-acima">Acesso Restrito</button>
+					<button class="opcao">Entrar</button>
+					<button class="opcao">Esqueci a Senha</button>
+					<button class="opcao">Primeiro Acesso</button>
+				</div>
 			</div>
-			<div class="link-box", id="lb2">
-				<div class="link-item">Link1</div>
-				<div class="link-item">Link2</div>
-				<div class="link-item">Link3</div>
-				<div class="link-item">Link4</div>
+			<div class="conteudo">
+				<p class="titulo-conteudo">Login</p>
+				<div class="barra-preta"></div>
+				<div class="login-form">
+					<p class="login-info">Usuário: <input type="number"></input></p>
+					<p class="login-info">Senha: <input type="password"></input></p>
+					<button class="login-button">Entrar</button>
+				</div>
+				<div class="barra-preta"></div>
+				<div class="texto-abaixo">
+					<p>
+						<span style="color: #808026">Créditos</span> 
+						| 
+						<span style="color: #808026">Fale conosco</span> 
+					</p>
+					<p>© 1999 - 2026 - Superintendência de Tecnologia da Informação/USP</p>
+				</div>
 			</div>
-		</nav>
-		<div class="login">
-			<form>
-				<input type="name" placeholder="Usuário">
-				<input type="password" placeholder="Senha">
-				<button type="submit">Entrar</button>
-			</form>
 		</div>
-
-	</div>
-</body>
-
+	</body>
 </html>
