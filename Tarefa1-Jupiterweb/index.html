@@ -143,9 +143,39 @@
 
 			.login-form {
 				display: flex;
-				flex-direction: column;
+				flex-direction: row;
 				width: 100%;
-				align-items: center;
+				align-items: top;
+				justify-content: center;
+			}
+
+			.texto-esquerdo {
+				display: flex;
+				flex-direction: column;
+				gap: 1vh;
+				align-items: right;
+				font-size: 13px;
+				padding: 2px 2px 2px 5px;
+				margin: 0;
+			}
+
+			input[type=number]::-webkit-inner-spin-button,
+			input[type=number]::-webkit-outer-spin-button {
+				-webkit-appearance: none;
+			}
+
+			.texto-input {
+				font-size: 13px;
+				padding: 2px 2px 2px 5px;
+				margin: 0;
+				width: 100%;
+			}
+
+			.login-inputs {
+				display: flex;
+				flex-direction: column;
+				gap: 1vh;
+				align-items: left;
 			}
 
 			.login-info {
@@ -159,6 +189,7 @@
 				border: none;
 				border-radius: 5px;
 				cursor: pointer;
+				width: 50%;
 			}
 
 			.texto-abaixo {
@@ -204,16 +235,22 @@
 				<p class="titulo-conteudo">Login</p>
 				<div class="barra-preta"></div>
 				<div class="login-form">
-					<p class="login-info">Usuário: <input type="number"></input></p>
-					<p class="login-info">Senha: <input type="password"></input></p>
-					<button class="login-button">Entrar</button>
+					<div class="texto-esquerdo">
+						<p class="texto-input">Usuário: </p>
+						<p class="texto-input">Senha: </p>
+					</div>
+					<div class="login-inputs">
+						<input type="number"></input>
+						<input type="password"></input>
+						<button class="login-button">Entrar</button>
+					</div>
 				</div>
 				<div class="barra-preta"></div>
 				<div class="texto-abaixo">
 					<p>
-						<span style="color: #808026">Créditos</span> 
+						<span style="color: #808026; cursor: pointer;">Créditos</span> 
 						| 
-						<span style="color: #808026">Fale conosco</span> 
+						<span style="color: #808026; cursor: pointer;">Fale conosco</span> 
 					</p>
 					<p>© 1999 - 2026 - Superintendência de Tecnologia da Informação/USP</p>
 				</div>
