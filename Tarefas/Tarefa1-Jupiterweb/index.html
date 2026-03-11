@@ -1,260 +1,75 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html class="dark sl-theme-dark" lang="pt-br">
 
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		
-		<title>Jupiterweb</title>
-		
-		<style>
+<head>
+	<title>Jupiterweb</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-			p {
-				font-family: Arial, Helvetica, sans-serif;
-			}
+	<link rel="stylesheet" href="styles/style.css">
+</head>
 
-			button {
-				font-family: Arial, Helvetica, sans-serif;
-			}
+<body>
+	<header>
+		<img src="usp-logo-invertido.png" id="usp-logo">
+		<img src="usp-logo-texto.png" id="usp-logo-texto">
+	</header>
+	<div class="barras">
+		<div id="header-barra1"></div>
+		<div id="header-barra2"></div>
+		<div id="header-barra3"></div>
+	</div>
+	<div class="corpo">
+		<nav class="sidebar">
+			<div class="sidebar-group-name">
+				<p class="sidebar-content" style="font-size: large; font-weight: 700;">Público</p>
+			</div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">🗓️</p>
+				<p class="sidebar-content">Calendário Escolar</p>
+			</div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">🎓</p>
+				<p class="sidebar-content">Cursos de Ingresso</p>
+			</div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">🧑‍🏫</p>
+				<p class="sidebar-content">Disciplina</p>
+			</div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">📃</p>
+				<p class="sidebar-content">Editais</p>
+			</div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">❓</p>
+				<p class="sidebar-content">FAQ</p>
+			</div>
 			
-			.header {
-				display: flex;
-				flex-direction: column;
-				height: 13vh;
-				width: 100%;
-				margin-bottom: 2vh;
-			}
-
-			.header-imagens {
-				display: flex;
-				height: 8vh;
-				width: 100%;
-				align-items: flex-end;
-				margin-bottom: 1vh;
-			}
-			
-			.usp-logo {
-				display: flex;
-				height: 100%;
-				width: auto;
-				margin-right: 5vw;
-				margin-left: 5vw;
-			}
-
-			.usp-logo-texto {
-				display: flex;
-				height: 80%;
-				width: auto;
-			}
-
-			.barras {
-				display: flex;
-				flex-direction: column;
-				height: 4vh;
-				width: 100%;
-				background-color: rgb(0, 0, 0);
-			}
-
-			.barra {
-				flex: 1;
-				width: 100%;
-				background-color: rgb(0, 0, 0);
-			}
-
-			#barra1 {
-				background: rgb(244, 185, 64);
-			}
-			#barra2 {
-				background: rgb(89, 195, 209);
-			}
-			#barra3 {
-				flex: 2;
-				background: rgb(65, 147, 170);
-			}
-
-			.corpo {
-				display: flex;
-				flex-direction: row;
-				height: 100%;
-				width: 100%;
-			}
-
-			.menu-publico, .menu-restrito {
-				display: flex;
-				flex-direction: column;
-				gap: 1px;
-				margin-bottom: 2vh;
-				align-items: flex-start;
-				border: 1px solid #CCCCCC;
-				padding: 2px;
-				width: 200px;
-			}
-
-			.texto-acima {
-				font-size: 13px;
-				background-color: #CCCCCC;
-				color: white;
-				border: none;
-				width: 100%;
-				margin: 0;
-				margin-bottom: 0;
-				padding: 6px 6px 6px 6px;
-				text-align: left;
-				font-weight: bold;
-			}
-
-			.opcao {
-				font-size: 13px;
-				background-color: white;
-				border: none;
-				width: 100%;
-				text-align: left;
-				padding: 6px;
-
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				cursor: pointer;
-			}
-
-			.opcao:hover {
-				background-color: rgb(214, 214, 214);
-			}
-
-			.conteudo {
-				display: flex;
-				flex-direction: column;
-				gap: 1vh;
-				width: 100%;
-				padding: 0 2vw;
-			}
-
-			.titulo-conteudo {
-				font-size: 12px;
-				margin-bottom: 0vh;
-				margin-top: 0;
-			}
-
-			.barra-preta {
-				width: 100%;
-				height: 1px;
-				background-color: black;
-			}
-
-			.login-form {
-				display: flex;
-				flex-direction: row;
-				width: 100%;
-				align-items: top;
-				justify-content: center;
-			}
-
-			.texto-esquerdo {
-				display: flex;
-				flex-direction: column;
-				gap: 1vh;
-				align-items: right;
-				font-size: 13px;
-				padding: 2px 2px 2px 5px;
-				margin: 0;
-			}
-
-			input[type=number]::-webkit-inner-spin-button,
-			input[type=number]::-webkit-outer-spin-button {
-				-webkit-appearance: none;
-			}
-
-			.texto-input {
-				font-size: 13px;
-				padding: 2px 2px 2px 5px;
-				margin: 0;
-				width: 100%;
-			}
-
-			.login-inputs {
-				display: flex;
-				flex-direction: column;
-				gap: 1vh;
-				align-items: left;
-			}
-
-			.login-info {
-				margin: 0;
-				margin-bottom: 1vh;
-			}
-
-			.login-button {
-				background-color: rgb(0, 98, 255);
-				color: white;
-				border: none;
-				border-radius: 5px;
-				cursor: pointer;
-				width: 50%;
-			}
-
-			.texto-abaixo {
-				font-size: 13px;
-				text-align: center;
-				color: rgb(100, 100, 100);
-			}
-
-		</style>
-
-	</head>
-
-	<body>
-		<div class="header">
-			<div class="header-imagens">
-				<img class="usp-logo" src="usp-logo.png">
-				<img class="usp-logo-texto" src="usp-logo-texto.png">
+			<div class="sidebar-group-name">
+				<p class="sidebar-content" style="font-size: large; font-weight: 700;">Acesso Restrito</p>
 			</div>
-			<div class="barras">
-				<div class="barra" id="barra1"></div>
-				<div class="barra" id="barra2"></div>
-				<div class="barra" id="barra3"></div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">🚪</p>
+				<p class="sidebar-content">Entrar</p>
 			</div>
-		</div>
-		<div class="corpo">
-			<div class="menu">
-				<div class="menu-publico">
-					<button class="texto-acima">Público</button>
-					<button class="opcao">Calendário Escolar <img class="seta" src="arrow_sub1.gif"></button>
-					<button class="opcao">Cursos de Ingresso</button>					
-					<button class="opcao">Disciplina <img class="seta" src="arrow_sub1.gif"></button>
-					<button class="opcao">Editais <img class="seta" src="arrow_sub1.gif"></button>					
-					<button class="opcao">FAQ <img class="seta" src="arrow_sub1.gif"></button>
-				</div>
-				<div class="menu-restrito">
-					<button class="texto-acima">Acesso Restrito</button>
-					<button class="opcao">Entrar</button>
-					<button class="opcao">Esqueci a Senha</button>
-					<button class="opcao">Primeiro Acesso</button>
-				</div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">🔑</p>
+				<p class="sidebar-content">Esqueci a Senha</p>
 			</div>
-			<div class="conteudo">
-				<p class="titulo-conteudo">Login</p>
-				<div class="barra-preta"></div>
-				<div class="login-form">
-					<div class="texto-esquerdo">
-						<p class="texto-input">Usuário: </p>
-						<p class="texto-input">Senha: </p>
-					</div>
-					<div class="login-inputs">
-						<input type="number"></input>
-						<input type="password"></input>
-						<button class="login-button">Entrar</button>
-					</div>
-				</div>
-				<div class="barra-preta"></div>
-				<div class="texto-abaixo">
-					<p>
-						<span style="color: #808026; cursor: pointer;">Créditos</span> 
-						| 
-						<span style="color: #808026; cursor: pointer;">Fale conosco</span> 
-					</p>
-					<p>© 1999 - 2026 - Superintendência de Tecnologia da Informação/USP</p>
-				</div>
+			<div class="sidebar-item">
+				<p class="sidebar-icon">1️⃣</p>
+				<p class="sidebar-content">Primeiro Acesso</p>
 			</div>
-		</div>
-	</body>
+		</nav>
+		
+		<main class="conteudo">
+			<div class="login-box">
+				<input type="text" placeholder="Usuário" class="login-input">
+				<input type="password" placeholder="Senha" class="login-input">
+				<button class="login-button" onclick="alert('Login bem-sucedido!')">Entrar</button>
+			</div>
+		</main>
+	</div>
+</body>
+
 </html>
