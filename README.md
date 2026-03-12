@@ -11,11 +11,19 @@ Como projeto individual de `MAC0350 - Introdução ao Desenvolvimento de Sistema
 
 A proposta é que a página web seja similar à plataforma [Desmos](https://www.desmos.com/calculator), onde os usuários possam interagir com os elementos do problema, como os polígonos e pontos de início e fim, e visualizar o caminho encontrado pelo algoritmo de resolução do TPP. Além disso, buscamos mostrar o processo de resolução, permitindo que os usuários vejam as etapas intermediárias do algoritmo, como a construção do mapa de último passo e região de primeiro contato. 
 
+Esse projeto contempla diversos aspectos da disciplina, sendo necessário aplicar o que aprendemos sobre HTML e CSS para criar uma interface visualmente atraente e funcional, além de utilizar JavaScript para implementar a lógica de interação e visualização do processo de resolução do TPP. Não só, buscamos permitir que o usuário possa salvar e carregar suas próprias instâncias do problema quando estiver logado, o que envolve a implementação de funcionalidades de backend para gerenciar os dados dos usuários e suas instâncias do TPP.
+
 Os arquivos relacionados ao projeto individual estão organizados na pasta `ProjetoIndividual`, onde você encontrará o código-fonte da aplicação web, os arquivos de configuração e os recursos utilizados para a visualização do TPP.
 
 ## Tarefas de Classe e de Casa
 
-A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organizadas por aula, como apresentado em `https://webdev2025.lol`. Toda tarefa de classe ou de casa está nomeada seguindo o formato `TarefaX-Y`, onde `X` é o número da aula e `Y` é o nome da tarefa. Cada pasta contém um arquivo `index.html` que pode ser aberto em um navegador para visualizar a resolução da tarefa, além de outros arquivos relacionados, como scripts, estilos e recursos utilizados.
+A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organizadas por aula, como apresentado em `https://webdev2025.lol`. Toda tarefa de classe ou de casa está em uma pasta nomeada de acordo com a aula correspondente no formato `AulaX-Y` onde `X` é o número da aula e `Y` é `Sala` para tarefas de classe ou `Casa` para tarefas de casa. Seguindo esse formato, as tarefas de classe e de casa são organizadas da seguinte maneira:
 
-- `Tarefa1-Jupiterweb`: Recriação da página de login do Jupiterweb.
-- `Tarefa1-PáginaPessoal`: Recriação da página pessoal do professor Routo Terada usando técnicas modernas de HTML e CSS.
+- `Aula0-Sala`: Recriação da página de login do Jupiterweb. Criamos uma versão em modo escuro da página de login do Jupiterweb, utilizando técnicas modernas de HTML e CSS para garantir uma experiência visual agradável e funcional.
+
+- `Aula0-Casa`: Recriação da página pessoal do professor Routo Terada usando técnicas modernas de HTML e CSS. Condensamos as informações mais relevantes da página original, como a biografia, publicações e projetos, em um formato mais conciso e visualmente atraente. Também colocamos as imagens diretamente visíveis, evitando a necessidade de clicar cada uma das mais de 15 imagens para visualizá-las, e organizamos as informações de forma clara e acessível.
+
+- `Aula2-Sala`: ...
+- `Aula2-Casa`: ...
+- `Aula3-Sala`: ...
+- `Aula4-Sala`: ...
