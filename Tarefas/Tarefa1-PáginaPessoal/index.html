@@ -5,138 +5,85 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+		<link rel="stylesheet" href="style.css">
+
 		<title>Routo Terada home page</title>
 
-		<style>
-
-			p {
-				font-family: Helvetica, sans-serif;
-				margin: 0;
-				margin-bottom: 1vh;
-			}
-
-			body {
-				background-color: rgb(33, 33, 33);
-				margin: 0;
-			}
-
-			.header {
-				display: flex;
-				height: 7vh;
-				width: 100%;
-				justify-content: right;
-			}
-
-			.header-options {
-				display: flex;
-				flex-direction: row;
-				height: 100%;
-				width: fit-content;
-				align-items: center;
-				justify-content: right;
-				margin-right: 15vw;
-			}
-
-			.header-text {
-				font-size: 18px;
-				color: white;
-				padding: 0 10px;
-				background-color: transparent;
-				border: none;
-				cursor: pointer;
-				transition: color 0.15s;
-			}
-
-			.header-text:hover {
-				color: green;
-			}
-
-			.horizontal-bar {
-				height: 1px;
-				width: 100%;
-				background-color: rgb(110, 110, 110);
-			}
-
-			.body-text {
-				display: flex;
-				flex-direction: column;
-				gap: 1vh;
-				padding: 5vh 15vw;
-				font-size: 20px;
-				color: white;
-				font-weight: 100;
-			}
-
-			#container {
-				width: 100%;
-			}
-
-			#floated {
-				float: right;
-				width: 25%;
-			}
-
-			#img-routo {
-				width: 100%;
-				height: auto;
-				margin: 0;
-				border-radius: 100%;
-			}
-
-			#nome-professor {
-				font-size: 40px;
-				font-weight: bold;
-				margin-bottom: 2vh;
-			}
-
-			#phd-professor {
-				margin-bottom: 2vh;
-			}
-
-		</style>
 	</head>
 
 	<body>
-		<div class="header">
-			<div class="header-options">
-				<button class="header-text">About</button>
-				<button class="header-text">Publication</button>
-				<button class="header-text">Projects</button>
-				<button class="header-text">Students</button>
-			</div>
-		</div>
-		<div class="horizontal-bar"></div>
-		<div class="body-text">
-
-			<div id="container">
-				<div id="floated">
-					<img src="routo-square.png" id="img-routo">
+		<div class="main-body">
+			<div class="header">
+				<div class="header-text">
+					<p class="header-title">Routo Terada</p>
+					<p class="header-subtitle">Ph. D. University of Wisconsin-Madison, 1979</p>
+					<p class="header-description">
+						I am a Full Professor (Titular) at the
+						Department of Computer Science
+						<a href="https://www.ime.usp.br" target="_blank">Institute of Mathematics and Statistics
+						University of São Paulo - USP</a>
+						São Paulo, Bra[sz]il.
+						
+					</p>
+					<p class="header-description" style="margin-top: 1vh;">
+						Here's a <a href="https://www.ime.usp.br/~rt/IMEmap.JPG" target="_blank">bird's eye view of IME-USP</a>
+						and <a href="https://www.ime.usp.br/localizacao/" target="_blank"> how to reach it</a>.
+					</p>
+					<p class="header-description" style="margin-top: 1vh;">
+						<span style="font-weight: bold;">Research Interests:</span>
+						Computational Complexity, Cryptography, Machine Learning
+					</p>
 				</div>
-				<p id="nome-professor">
-					<span style="font-weight: bold;">Routo</span> Terada
-				</p>
-				<p id="phd-professor">
-					Ph. D. University of Wisconsin-Madison, 1979.
-				</p>
-				<p>
-					I am a Full Professor (Titular) at the
-
-					Department of Computer Science
-					Institute of Mathematics and Statistics
-					University of São Paulo - USP
-					São Paulo, Bra[sz]il.
-				</p>
-				<a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" style="color: white;">
-					My pictures (2002), (1997), (1990)
-				</a>
+				<img class="profile-picture" src="routoPNG222aaa.png">
 			</div>
-
+			<div class="images">
+				<details class="images-routo-box">
+					<summary class="images-title">Personal Images</summary>
+					<div class="images-routo">
+						<img class="image-routo" src="FOTOrt.png">
+						<img class="image-routo" src="ROUTOzero.png">
+						<img class="image-routo" src="routo1990.png">
+					</div>
+					<div class="images-routo">
+						<img class="image-routo" src="SBSeg2012.png">
+						<img class="image-routo" src="Medalha.png">
+					</div>
+				</details>
+			</div>
+			
+			<div class="images">
+				<details class="images-routo-box">
+					<summary class="images-title">Some Interesting Pictures</summary>
+					<div class="images-routo">
+						<img class="image-routo" src="AMERICA3.png">
+						<img class="image-routo" src="KabukiActor.png">
+						<img class="image-routo" src="Koi2.png">
+						<img class="image-routo" src="SaltGather.png">
+					</div>
+					<div class="images-routo">
+						<img class="image-routo" src="IPE2.png">
+						<img class="image-routo" src="IPE3.png">
+						<img class="image-routo" src="IPE5.png">
+					</div>
+					<div class="images-routo">
+						<img class="image-routo" src="fuji.png">
+						<img class="image-routo" src="waves.png">
+					</div>
+				</details>
+			</div>
 		</div>
-		<div class="contact-info">
-
-		</div>
+		<div class="bottom-line"></div>
 		<div class="copyright-notice">
-
+			<p id="ime-address">
+				Instituto de Matemática, Estatística e Ciência da Computação da Universidade de São Paulo
+			</p>
+			<p>
+				Rua do Matão, 1010 - CEP 05508-090 - São Paulo - SP - Brazil 2026
+			</p>
 		</div>
 	</body>
 </html>
