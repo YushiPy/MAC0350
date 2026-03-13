@@ -29,4 +29,4 @@ A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organ
 
 - `Aula3-Sala`: Resolvemos os problema propostos para sala, capturando o event `onclick` sem utilizar o atributo `onclick` diretamente no HTML. Também criamos uma lista dinâmica, cronômetro e seletor de time, utilizando JavaScript para manipular o DOM e criar as funcionalidades necessárias para cada exercício. Para capturar o evento `onclick` sem utilizar o atributo diretamente no HTML, utilizamos o método `addEventListener` em JavaScript, permitindo uma abordagem mais limpa e separada entre a estrutura HTML e a lógica de interação.
 
-- `Aula4-Sala`: ...
+- `Aula4-Sala`: Usamos FAST API para permitir que o usuário se comunique com o backend.
