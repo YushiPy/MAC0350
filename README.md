@@ -23,7 +23,10 @@ A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organ
 
 - `Aula0-Casa`: Recriação da página pessoal do professor Routo Terada usando técnicas modernas de HTML e CSS. Condensamos as informações mais relevantes da página original, como a biografia, publicações e projetos, em um formato mais conciso e visualmente atraente. Também colocamos as imagens diretamente visíveis, evitando a necessidade de clicar cada uma das mais de 15 imagens para visualizá-las, e organizamos as informações de forma clara e acessível.
 
-- `Aula2-Sala`: ...
-- `Aula2-Casa`: ...
-- `Aula3-Sala`: ...
+- `Aula2-Sala`: Reolvemos os problemas propostos para sala, criando um botão que emite um alerta quando clicado, um botão que imprime os números pares de 1 a 10 no console, um botão que altera o texto de um elemento HTML, um botão que alterna o estado de um elemento entre "Ligado" e "Desligado", e um botão conta de 10 até 1, atualizando o número exibido a cada clique. Para implementar essas funcionalidades, utilizamos JavaScript para manipular o DOM e criar as funções necessárias para cada botão, permitindo a interação do usuário com a página de forma dinâmica.
+
+- `Aula2-Casa`: Criamos uma página web que permite o usuário trocar entre modo claro e escuro clicando em um botão. Além disso, criamos um botão que permite ao usuário dobrar um número repetidas vezes, mostrando o resultado a cada clique. Para implementar essas funcionalidades, utilizamos JavaScript para manipular o DOM e alterar as classes CSS da página, permitindo a troca entre os modos claro e escuro, bem como a atualização do número dobrado a cada clique.
+
+- `Aula3-Sala`: Resolvemos os problema propostos para sala, capturando o event `onclick` sem utilizar o atributo `onclick` diretamente no HTML. Também criamos uma lista dinâmica, cronômetro e seletor de time, utilizando JavaScript para manipular o DOM e criar as funcionalidades necessárias para cada exercício. Para capturar o evento `onclick` sem utilizar o atributo diretamente no HTML, utilizamos o método `addEventListener` em JavaScript, permitindo uma abordagem mais limpa e separada entre a estrutura HTML e a lógica de interação.
+
 - `Aula4-Sala`: ...
