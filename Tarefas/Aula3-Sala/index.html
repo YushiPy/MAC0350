@@ -1,15 +1,120 @@
 <!DOCTYPE html>
-<html class="dark sl-theme-dark" lang="pt-br">
-
+<html lang="pt-br">
 <head>
-	<title></title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+	<title>Exercícios - JS Avançado: DOM e Memória</title>
+	
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="styles/style.css">
 </head>
-
 <body>
+
+<div class="container">
+	<h1>Exercícios Práticos: DOM, Eventos e Storage</h1>
+	<p>Utilize a tag <code>&lt;script&gt;</code> no final deste arquivo. <strong>Regra de Ouro:</strong> Não altere o HTML. Use apenas <code>addEventListener</code> e <code>DOMContentLoaded</code>!</p>
+
+	<div class="exercise-box">
+		<h3>1. Separando o JS do HTML</h3>
+		<p>Remova a dependência do <code>onclick</code>. Capture o botão abaixo pelo seu ID e adicione um <em>Event Listener</em> de 'click' que mude o texto dele para "Fui clicado via Listener!".</p>
+		<button id="btn-listener">Me clique (sem onclick)</button>
+	</div>
+
+	<div class="exercise-box">
+		<h3>2. Criação Dinâmica (createElement)</h3>
+		<p>Digite algo no campo de texto e clique em adicionar. O seu JS deve ler o <code>.value</code> do input, usar <code>document.createElement('li')</code> e dar um <code>append</code> na lista vazia abaixo.</p>
+		<input type="text" id="input-item" placeholder="Novo item da lista...">
+		<button id="btn-add">Adicionar</button>
+		<ul id="lista-itens" class="dynamic-list"></ul>
+	</div>
+
+	<div class="exercise-box">
+		<h3>3. O Cronômetro (setInterval)</h3>
+		<p>Crie uma lógica para um cronômetro. Ao clicar em "Iniciar", use <code>setInterval</code> para aumentar o número do visor a cada 1 segundo (1000ms).</p>
+		<button id="btn-iniciar">Iniciar Cronômetro</button>
+		<span id="visor-cronometro" class="output-text">0</span>
+	</div>
+
+	<div class="exercise-box">
+		<h3>4. Memória com Local Storage</h3>
+		<p>Escolha um time no menu suspenso. O JS deve escutar o evento <code>change</code> do menu, atualizar o texto "Nenhum selecionado" e <strong>salvar a escolha no Local Storage</strong>. <br><em>Desafio:</em> Ao recarregar a página, o código deve buscar o valor salvo no Storage e exibi-lo automaticamente.</p>
+		
+		<select id="select-time" title="Escolha um time">
+			<option value="">Escolha um time...</option>
+			<option value="São Paulo">São Paulo</option>
+			<option value="Corinthians">Corinthians</option>
+			<option value="Palmeiras">Palmeiras</option>
+			<option value="Santos">Santos</option>
+		</select>
+		<span id="time-selecionado" class="output-text">Nenhum selecionado</span>
+	</div>
+
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		
+		document.querySelector("#btn-listener").onclick = () => {
+			let button = document.querySelector("#btn-listener");
+			button.textContent = "Fui clicado via Listener!";
+		}
+
+		document.querySelector("#btn-add").onclick = () => {
+			let input = document.querySelector("#input-item");
+			let lista = document.querySelector("#lista-itens");
+
+			if (input.value.trim() !== "") {
+				let li = document.createElement("li");
+				li.textContent = input.value;
+				lista.appendChild(li);
+				input.value = "";
+			}
+		}
+
+		let cronometroRodando = false;
+
+		document.querySelector("#btn-iniciar").onclick = () => {
+
+			let visor = document.querySelector("#visor-cronometro");
+			let contador = 0;
+			
+			if (cronometroRodando) return; // Evita múltiplos intervalos
+
+			cronometroRodando = true;
+
+			setInterval(
+				() => {
+					contador++;
+					visor.textContent = contador;
+				}, 1000
+			)
+		}
+
+		let timeSalvo = localStorage.getItem("timeFavorito");
+		
+		if (timeSalvo) {
+			document.querySelector("#time-selecionado").textContent = timeSalvo;
+			document.querySelector("#select-time").value = timeSalvo;
+		}
+
+		document.querySelector("#select-time").onchange = (event) => {
+			let display = document.querySelector("#time-selecionado");
+			let timeEscolhido = event.target.value;
+
+			if (timeEscolhido) {
+				display.textContent = timeEscolhido;
+				localStorage.setItem("timeFavorito", timeEscolhido);
+			} 
+			else {
+				display.textContent = "Nenhum selecionado";
+				localStorage.removeItem("timeFavorito");
+			}
+		}
+	});
+</script>
 
 </body>
 </html>
