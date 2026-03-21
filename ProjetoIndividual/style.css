@@ -10,6 +10,11 @@
 	--grid-color: #999999;
 	--sub-grid-color: #E0E0E0;
 
+	--start-point-color: rgb(124, 189, 93);
+	--target-point-color: rgb(188, 47, 47);
+
+	--point-radius: 8px;
+
 	--button-light-color: #F2F4F5;
 	--button-accent-color: rgb(47, 114, 220);
 	--button-accent-color-hover: rgb(36, 87, 168);
