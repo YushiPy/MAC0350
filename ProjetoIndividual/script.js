@@ -327,7 +327,15 @@ function draw() {
 	let polygonColors = style.getPropertyValue("--polygon-colors").trim().split(",").map(s => s.trim());
 
 	for (let i = 0; i < polygons.length; i++) {
-		draw_polygon(polygons[i], polygonColors[i % polygonColors.length]);
+
+		const polygonColor = polygonColors[i % polygonColors.length];
+
+		draw_polygon(polygons[i], polygonColor);
+
+		for (let j = 0; j < polygons[i].length; j++) {
+			const vertex = polygons[i][j];
+			draw_point(vertex.x, vertex.y, pointRadius * 0.6, polygonColor);
+		}
 	}
 }
 
@@ -349,8 +357,8 @@ let isDark = mq.matches;
 
 function applyTheme() {
 	document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
-	
 }
+
 function parse_color(str) {
 	const tmp = document.createElement("div");
 	tmp.style.color = str;
@@ -433,28 +441,70 @@ mq.addEventListener('change', e => {
 applyTheme();
 
 
-canvas.addEventListener("mousedown", () => mouse_held = true);
-canvas.addEventListener("mouseup", () => mouse_held = false);
+let dragging = null; // { obj, key } — the object and key being dragged
+
+const HIT_RADIUS = 10; // pixels
+
+function find_draggable_point(canvas_x, canvas_y) {
+	const candidates = [
+		{ obj: startPoint,  key: null, ref: "startPoint"  },
+		{ obj: targetPoint, key: null, ref: "targetPoint" },
+	];
+
+	for (let i = 0; i < polygons.length; i++) {
+		for (let j = 0; j < polygons[i].length; j++) {
+			candidates.push({ obj: polygons[i], key: j });
+		}
+	}
+
+	for (const candidate of candidates) {
+		const pt = candidate.key !== null ? candidate.obj[candidate.key] : candidate.obj;
+		const cp = world_to_canvas(pt.x, pt.y);
+		const dx = cp.x - canvas_x;
+		const dy = cp.y - canvas_y;
+		if (Math.sqrt(dx*dx + dy*dy) <= HIT_RADIUS) return candidate;
+	}
+
+	return null;
+}
+canvas.addEventListener("mousedown", (e) => {
+	const bounds = canvas.getBoundingClientRect();
+	const cx = e.clientX - bounds.left;
+	const cy = e.clientY - bounds.top;
+
+	dragging = find_draggable_point(cx, cy);
+	if (!dragging) mouse_held = true;
+});
+
+canvas.addEventListener("mouseup", () => {
+	mouse_held = false;
+	dragging = null;
+});
 
 canvas.addEventListener("mousemove", (e) => {
 
-	let bounds = canvas.getBoundingClientRect();
-
+	const bounds = canvas.getBoundingClientRect();
 	mouse_location.x = e.clientX - bounds.left;
 	mouse_location.y = e.clientY - bounds.top;
 
-	if (!mouse_held) {
+	if (dragging) {
+		const world = canvas_to_world(mouse_location.x, mouse_location.y);
+		const pt = dragging.key !== null ? dragging.obj[dragging.key] : dragging.obj;
+		pt.x = world.x;
+		pt.y = world.y;
+		draw();
 		return;
 	}
 
-	const relx = e.movementX / units_to_pixels;
-	const rely = -e.movementY / units_to_pixels;
+	canvas.style.cursor = find_draggable_point(mouse_location.x, mouse_location.y) ? "pointer" : "default";
 
-	camera_center.x -= relx;
-	camera_center.y -= rely;
-
-	draw();
+	if (mouse_held) {
+		camera_center.x -= e.movementX / units_to_pixels;
+		camera_center.y += e.movementY / units_to_pixels;
+		draw();
+	}	
 });
+
 
 canvas.addEventListener("wheel", (e) => {
 	
