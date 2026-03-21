@@ -32,7 +32,10 @@ let min_grid_spacing = 83;
 let startPoint = { x: 0, y: 0};
 let targetPoint = { x: 1, y: 0};
 
-
+let polygons = [
+	[{ x: 0.5, y: 0.5 }, { x: 1.5, y: 0.5 }, { x: 1, y: 1 }],
+	[{ x: -0.5, y: -0.5 }, { x: -1.5, y: -0.5 }, { x: -1, y: -1 }],
+]
 
 function canvas_center() {
 	return {
@@ -117,6 +120,31 @@ function draw_point(x, y, radius, color = "black") {
 	ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
 	ctx.fillStyle = color;
 	ctx.fill();
+}
+
+function draw_polygon(points, color = "black") {
+	// Draws a filled polygon with the given vertices (in world coordinates) and color.
+	// The polygon's inside is partially transparent so that the grid lines can be seen through it.
+	// The polygon's border is solid and has the same color as the inside, but fully opaque.
+
+	ctx.beginPath();
+	
+	const first_point = world_to_canvas(points[0].x, points[0].y);
+	ctx.moveTo(first_point.x, first_point.y);
+
+	for (let i = 1; i < points.length; i++) {
+		const p = world_to_canvas(points[i].x, points[i].y);
+		ctx.lineTo(p.x, p.y);
+	}
+
+	ctx.closePath();
+	ctx.fillStyle = color;
+	ctx.globalAlpha = 0.4;
+	ctx.fill();
+	ctx.globalAlpha = 1.0;
+	ctx.strokeStyle = color;
+	ctx.lineWidth = 2;
+	ctx.stroke();
 }
 
 function get_grid_scale(minimum_grid_spacing = min_grid_spacing) {
@@ -295,6 +323,12 @@ function draw() {
 
 	draw_point(startPoint.x, startPoint.y, pointRadius, startPointColor);
 	draw_point(targetPoint.x, targetPoint.y, pointRadius, targetPointColor);
+
+	let polygonColors = style.getPropertyValue("--polygon-colors").trim().split(",").map(s => s.trim());
+
+	for (let i = 0; i < polygons.length; i++) {
+		draw_polygon(polygons[i], polygonColors[i % polygonColors.length]);
+	}
 }
 
 
@@ -343,7 +377,6 @@ const CANVAS_VARS = [
 	"--number-text-color",
 	"--number-text-light-color",
 	"--start-point-color",
-	"--target-point-color",
 ];
 
 let toggleAnimationId = null;

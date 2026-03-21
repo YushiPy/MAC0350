@@ -17,6 +17,7 @@
 
 	--start-point-color: rgb(124, 189, 93);
 	--target-point-color: rgb(188, 47, 47);
+	--polygon-colors: #0000FF, #FFFF00, #FF00FF, #00FFFF, #FF0000, #00FF00;
 
 	--point-radius: 8px;
 
@@ -33,6 +34,7 @@
 }
 
 [data-theme="dark"] {
+
 	--header-color: #2A2A2A;
 	--header-text-color: #E2E2E2;
 	--header-text-color-hover: #ffffff;
@@ -42,6 +44,10 @@
 	--axis-color: #E0E0E0;
 	--grid-color: #555555;
 	--sub-grid-color: #2A2A2A;
+
+	--start-point-color: #00FFFF;
+	--target-point-color: #FF00FF;
+	--polygon-colors: #FFFF00, #0000FF, #00FF00, #FF0000, #00FFFF, #FF00FF;
 
 	--number-text-color: #E0E0E0;
 	--number-text-light-color: #777777;
