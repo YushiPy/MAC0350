@@ -1,12 +1,32 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
 		<title>Visualizador do TPP</title>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link rel="stylesheet" href="style.css">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+		
 	</head>
 	<body>
+		<div class="header">
+			<button class="folder-button">
+				<svg class="folder-icon" width="245" height="181" viewBox="0 0 245 181" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M11 170H0C0 176.075 4.92487 181 11 181L11 170ZM203 170V181C207.882 181 212.18 177.782 213.555 173.098L203 170ZM229.413 80L239.968 83.0976L244.105 69H229.413V80ZM58.413 80V69H50.1774L47.8582 76.9024L58.413 80ZM11 11V0C4.92487 0 0 4.92487 0 11L11 11ZM87 11L94.9419 3.38904C92.8671 1.22412 89.9986 0 87 0V11ZM110 35L102.058 42.611C104.133 44.7759 107.001 46 110 46V35ZM211 46C217.075 46 222 41.0751 222 35C222 28.9249 217.075 24 211 24V35V46ZM203 170L213.555 173.098L239.968 83.0976L229.413 80L218.858 76.9024L192.445 166.902L203 170ZM229.413 80V69H58.413V80V91H229.413V80ZM11 170V181H32V170V159H11V170ZM32 170V181H203V170V159H32V170ZM58.413 80L47.8582 76.9024L21.4452 166.902L32 170L42.5548 173.098L68.9679 83.0976L58.413 80ZM11 170H22V11H11H0V170H11ZM87 11L79.0581 18.611L102.058 42.611L110 35L117.942 27.389L94.9419 3.38904L87 11ZM110 35V46H211V35V24H110V35ZM11 11V22H87V11V0H11V11Z"/>
+				</svg>
+			</button>
+			<p class="drawing-name">
+				Untitled Drawing
+			</p>
+			<button class="save-button">
+				Save
+			</button>
+		</div>
+		<canvas id="drawing-canvas">
 
+		</canvas>
 	</body>
+	<script src="script.js" defer></script>
+
 </html>
