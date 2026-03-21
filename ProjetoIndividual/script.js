@@ -7,8 +7,10 @@ const canvas = document.getElementById("drawing-canvas");
 const ctx = canvas.getContext("2d");
 
 const resize_observer = new ResizeObserver(() => {
-	canvas.width = canvas.offsetWidth;
-	canvas.height = canvas.offsetHeight;
+	const dpr = window.devicePixelRatio || 1;
+	canvas.width = canvas.offsetWidth * dpr;
+	canvas.height = canvas.offsetHeight * dpr;
+	ctx.scale(dpr, dpr);
 	draw();
 });
 
@@ -35,22 +37,22 @@ let points = [
 
 function canvas_center() {
 	return {
-		x: canvas.width / 2,
-		y: canvas.height / 2
+		x: canvas.offsetWidth / 2,
+		y: canvas.offsetHeight / 2
 	};
 }
 
 function world_to_canvas(x, y) {
 	return {
-		x: canvas.width / 2 + (x - camera_center.x) * units_to_pixels,
-		y: canvas.height / 2 - (y - camera_center.y) * units_to_pixels
+		x: canvas.offsetWidth / 2 + (x - camera_center.x) * units_to_pixels,
+		y: canvas.offsetHeight / 2 - (y - camera_center.y) * units_to_pixels
 	};
 }
 
 function canvas_to_world(x, y) {
 	return {
-		x: (x - canvas.width / 2) / units_to_pixels + camera_center.x,
-		y: -(y - canvas.height / 2) / units_to_pixels + camera_center.y
+		x: (x - canvas.offsetWidth / 2) / units_to_pixels + camera_center.x,
+		y: -(y - canvas.offsetHeight / 2) / units_to_pixels + camera_center.y
 	};
 }
 
@@ -66,10 +68,11 @@ function clamp_point(point, min, max) {
 }
 
 function clamp_to_canvas(point) {
-	return clamp_point(point, { x: 0, y: 0 }, { x: canvas.width, y: canvas.height });
+	return clamp_point(point, { x: 0, y: 0 }, { x: canvas.offsetWidth, y: canvas.offsetHeight });
 }
 
 function fix_coordinates(x, y) {
+
 	if (!isFinite(x)) {
 		if (x > 0) {
 			x = camera_center.x + canvas.offsetWidth / 2 / units_to_pixels;
@@ -150,8 +153,8 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 		grid_scale /= 2;
 	}
 
-	const half_width = canvas.width / 2 / units_to_pixels;
-	const half_height = canvas.height / 2 / units_to_pixels;
+	const half_width = canvas.offsetWidth / 2 / units_to_pixels;
+	const half_height = canvas.offsetHeight / 2 / units_to_pixels;
 
 	let x_start = Math.floor((camera_center.x - half_width) / grid_scale) * grid_scale;
 	
@@ -189,7 +192,7 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 
 function draw() {
 
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
 	const style = getComputedStyle(document.documentElement);
 	const axisColor = style.getPropertyValue("--axis-color").trim();
@@ -209,8 +212,8 @@ function draw() {
 
 		ctx.beginPath();
 		ctx.arc(
-			canvas.width / 2 + (x - camera_center.x) * units_to_pixels,
-			canvas.height / 2 - (y - camera_center.y) * units_to_pixels,
+			canvas.offsetWidth / 2 + (x - camera_center.x) * units_to_pixels,
+			canvas.offsetHeight / 2 - (y - camera_center.y) * units_to_pixels,
 			5, 0, Math.PI * 2
 		);
 
