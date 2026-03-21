@@ -1,5 +1,6 @@
 
 :root {
+
 	--header-color: #2A2A2A;
 	--header-text-color: #E2E2E2;
 	--header-text-color-hover: #ffffff;
@@ -27,6 +28,34 @@
 	--primary-text-color: #0F0F0F;
 
 	--header-height: 46px;
+
+	--background-transition-duration: 0.3s;
+}
+
+[data-theme="dark"] {
+	--header-color: #2A2A2A;
+	--header-text-color: #E2E2E2;
+	--header-text-color-hover: #ffffff;
+
+	--background-color: #121212;
+
+	--axis-color: #E0E0E0;
+	--grid-color: #555555;
+	--sub-grid-color: #2A2A2A;
+
+	--number-text-color: #E0E0E0;
+	--number-text-light-color: #777777;
+
+	--button-light-color: #2A2A2A;
+	--button-accent-color: rgb(47, 114, 220);
+	--button-accent-color-hover: rgb(36, 87, 168);
+	--button-accent-color-active: rgb(27, 66, 127);
+
+	--primary-text-color: #E2E2E2;
+}
+
+html {
+	transition: background-color var(--background-transition-duration) ease, color var(--background-transition-duration) ease;
 }
 
 body {

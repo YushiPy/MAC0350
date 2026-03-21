@@ -308,6 +308,98 @@ function change_zoom(scale, fixed_canvas_point) {
 	units_to_pixels *= scale;
 }
 
+let manualOverride = false;
+
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+let isDark = mq.matches;
+
+function applyTheme() {
+	document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+	
+}
+function parse_color(str) {
+	const tmp = document.createElement("div");
+	tmp.style.color = str;
+	document.body.appendChild(tmp);
+	const computed = getComputedStyle(tmp).color;
+	document.body.removeChild(tmp);
+	const [r, g, b] = computed.match(/\d+/g).map(Number);
+	return { r, g, b };
+}
+
+function lerp_color(a, b, t) {
+	return `rgb(${Math.round(a.r + (b.r - a.r) * t)}, ${Math.round(a.g + (b.g - a.g) * t)}, ${Math.round(a.b + (b.b - a.b) * t)})`;
+}
+
+function ease_in_out(t) {
+	return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+const CANVAS_VARS = [
+	"--background-color",
+	"--axis-color",
+	"--grid-color",
+	"--sub-grid-color",
+	"--number-text-color",
+	"--number-text-light-color",
+	"--start-point-color",
+	"--target-point-color",
+];
+
+let toggleAnimationId = null;
+let currentT = 1; // 1 = fully settled, 0 = just started
+
+function toggleTheme() {
+
+	if (toggleAnimationId !== null) {
+		cancelAnimationFrame(toggleAnimationId);
+		CANVAS_VARS.forEach(v => document.documentElement.style.removeProperty(v));
+		toggleAnimationId = null;
+	}
+
+	const root = document.documentElement;
+	const from = Object.fromEntries(CANVAS_VARS.map(v => [v, parse_color(getComputedStyle(root).getPropertyValue(v).trim())]));
+
+	isDark = !isDark;
+	manualOverride = true;
+	applyTheme();
+
+	const styleAfter = getComputedStyle(root);
+	const to = Object.fromEntries(CANVAS_VARS.map(v => [v, parse_color(styleAfter.getPropertyValue(v).trim())]));
+
+	const duration = parseFloat(styleAfter.getPropertyValue("--background-transition-duration")) * 1000 || 300;
+
+	// Start from the mirror of where we were (e.g. interrupted at t=0.25 → start new at t=0.75)
+	const startT = 1 - currentT;
+	const startTime = performance.now() - startT * duration;
+
+	function redrawLoop(now) {
+		currentT = ease_in_out(Math.min((now - startTime) / duration, 1));
+		CANVAS_VARS.forEach(v => root.style.setProperty(v, lerp_color(from[v], to[v], currentT)));
+		draw();
+		if (currentT < 1) {
+			toggleAnimationId = requestAnimationFrame(redrawLoop);
+		} else {
+			CANVAS_VARS.forEach(v => root.style.removeProperty(v));
+			toggleAnimationId = null;
+			currentT = 1;
+			draw();
+		}
+	}
+
+	toggleAnimationId = requestAnimationFrame(redrawLoop);
+}
+
+mq.addEventListener('change', e => {
+	if (!manualOverride) {
+		isDark = e.matches;
+		applyTheme();
+	}
+});
+
+applyTheme();
+
+
 canvas.addEventListener("mousedown", () => mouse_held = true);
 canvas.addEventListener("mouseup", () => mouse_held = false);
 
@@ -354,5 +446,9 @@ document.addEventListener("keydown", (e) => {
 	if (e.key === "-") {
 		change_zoom(1 / 1.1, canvas_center());
 		draw();
+	}
+
+	if (e.key === "t") {
+		toggleTheme();
 	}
 });
