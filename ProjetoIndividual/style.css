@@ -10,6 +10,10 @@
 	--grid-color: #999999;
 	--sub-grid-color: #E0E0E0;
 
+	--number-text-color: #0c0c0c;
+	--number-text-light-color: #999999;
+	--number-text-font: 16px 'Roboto', sans-serif;
+
 	--start-point-color: rgb(124, 189, 93);
 	--target-point-color: rgb(188, 47, 47);
 

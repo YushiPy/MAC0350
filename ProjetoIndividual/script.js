@@ -166,24 +166,29 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 	const half_width = canvas.offsetWidth / 2 / units_to_pixels;
 	const half_height = canvas.offsetHeight / 2 / units_to_pixels;
 
-	let number_text_font = "16px Arial";
+	// Get font from css
+	const style = getComputedStyle(document.documentElement);
 
-	let x_start = Math.floor((camera_center.x - half_width) / grid_scale) * grid_scale;
-	
+	const number_text_font = style.getPropertyValue("--number-text-font").trim();
+	const number_text_color = style.getPropertyValue("--number-text-color").trim();
+	const number_text_light_color = style.getPropertyValue("--number-text-light-color").trim();
+
 	const canvas_right = camera_center.x + half_width;
 	const canvas_left = camera_center.x - half_width;
 	const canvas_top = camera_center.y + half_height;
 	const canvas_bottom = camera_center.y - half_height;
 
+	let x_start = Math.floor((camera_center.x - half_width) / grid_scale) * grid_scale;
+	
 	let text_fixed_y = world_to_canvas(0, 0).y + 3;
-	let text_horizontal_color = "#000000";
+	let text_horizontal_color = number_text_color;
 
 	if (text_fixed_y < 0) {
 		text_fixed_y = 2;
-		text_horizontal_color = "#7a7a7a";
+		text_horizontal_color = number_text_light_color;
 	} else if (text_fixed_y > canvas.offsetHeight - 20) {
 		text_fixed_y = canvas.offsetHeight - 20;
-		text_horizontal_color = "#7a7a7a";
+		text_horizontal_color = number_text_light_color;
 	} else {
 		text_fixed_y += 2;
 	}
@@ -212,14 +217,14 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 	}
 
 	let text_fixed_x = world_to_canvas(0, 0).x - 8;
-	let text_vertical_color = "#000000";
+	let text_vertical_color = number_text_color;
 
 	if (text_fixed_x < 20) {
 		text_fixed_x = -1;
-		text_vertical_color = "#7a7a7a";
+		text_vertical_color = number_text_light_color;
 	} else if (text_fixed_x > canvas.offsetWidth - 8) {
 		text_fixed_x = canvas.offsetWidth - 8;
-		text_vertical_color = "#7a7a7a";
+		text_vertical_color = number_text_light_color;
 	} else {
 		text_fixed_x += 2;
 	}
@@ -261,7 +266,7 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 	let zero_x = zero_position.x - 8;
 	let zero_y = zero_position.y + 3;
 
-	ctx.fillStyle = "black";
+	ctx.fillStyle = number_text_color;
 	ctx.font = number_text_font;
 	ctx.textAlign = "right";
 	ctx.textBaseline = "top";
