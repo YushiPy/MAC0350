@@ -11,7 +11,7 @@ const resize_observer = new ResizeObserver(() => {
 	canvas.width = canvas.offsetWidth * dpr;
 	canvas.height = canvas.offsetHeight * dpr;
 	ctx.scale(dpr, dpr);
-	draw();
+	
 });
 
 resize_observer.observe(canvas);
@@ -37,8 +37,18 @@ let polygons = [
 	[{ x: -0.5, y: 0.0 }, { x: -1.5, y: -0.5 }, { x: -1, y: -1 }, { x: -0.5, y: -1 }, { x: 0.5, y: -0.5 }],
 ]
 
+let selected_points = []
+// Set of all points that have ever been selected, 
+// allows for multiple selection without losing previously 
+// selected points.
+let selected_points_total = new Set(); 
+
 // { start: {x, y}, end: {x, y} } in canvas coordinates, or null if not selecting
 let selection_rect = null; 
+
+function copy_point(point) {
+	return { x: point.x, y: point.y };
+}
 
 function canvas_center() {
 	return {
@@ -165,8 +175,8 @@ function color_add_alpha(color, alpha) {
 
 function draw_selection_rect(rect, color = "black") {
 	
-	const p1 = world_to_canvas(rect.start.x, rect.start.y);
-	const p2 = world_to_canvas(rect.end.x, rect.end.y);
+	const p1 = rect.start;
+	const p2 = rect.end;
 
 	const left = Math.min(p1.x, p2.x);
 	const top = Math.min(p1.y, p2.y);
@@ -417,15 +427,33 @@ function draw() {
 		}
 	}
 
-	if (selection_rect) {
-		const rect_world = {
-			start: canvas_to_world(selection_rect.start.x, selection_rect.start.y),
-			end: canvas_to_world(selection_rect.end.x, selection_rect.end.y)
-		};
-		draw_selection_rect(rect_world, axisColor);
+	if (selection_rect !== null) {
+		const rect = {
+			start: selection_rect.start,
+			end: selection_rect.end
+		}
+		draw_selection_rect(rect, axisColor);
+	}
+
+	for (let point of [...selected_points, ...selected_points_total]) {
+		// Draw a highlight around the point as a dashed circle
+		// that rotates based on the current time, to indicate that it's selected and can be dragged
+
+		const highlight_radius = pointRadius * 1.5;
+		const canvas_point = world_to_canvas(point.x, point.y);
+		const rotation_speed = 0.002; // radians per millisecond
+		const time = performance.now();
+		const angle = time * rotation_speed;
+
+		ctx.beginPath();
+		ctx.arc(canvas_point.x, canvas_point.y, highlight_radius, angle, angle + Math.PI * 2.0);
+		ctx.strokeStyle = axisColor;
+		ctx.lineWidth = 2;
+		ctx.setLineDash([5, 3]);
+		ctx.stroke();
+		ctx.setLineDash([]);
 	}
 }
-
 
 function change_zoom(scale, fixed_canvas_point) {
 
@@ -518,14 +546,14 @@ function toggleTheme() {
 	function redrawLoop(now) {
 		currentT = ease_in_out(Math.min((now - startTime) / duration, 1));
 		CANVAS_VARS.forEach(v => root.style.setProperty(v, lerp_color(from[v], to[v], currentT)));
-		draw();
+		
 		if (currentT < 1) {
 			toggleAnimationId = requestAnimationFrame(redrawLoop);
 		} else {
 			CANVAS_VARS.forEach(v => root.style.removeProperty(v));
 			toggleAnimationId = null;
 			currentT = 1;
-			draw();
+			
 		}
 	}
 
@@ -542,29 +570,37 @@ mq.addEventListener('change', e => {
 applyTheme();
 
 
-let dragging = null; // { obj, key } — the object and key being dragged
+// dragging = [reference_point, reference_current, points_begin_dragged],
+// The first element is the reference point that is used to determine the offset of the drag,
+// and the second element is an array of points that are being dragged 
+// (e.g. a polygon vertex, or the start/target point, or all vertices of a polygon if dragging the whole polygon)
+let dragging = [null, []];
 
-const HIT_RADIUS = 10; // pixels
+const HIT_RADIUS = 15; // pixels
 
-function find_draggable_point(canvas_x, canvas_y) {
+function find_draggable_point(canvas_x, canvas_y, candidates = null) {
 
-	const candidates = [
-		{ obj: startPoint,  key: null, ref: "startPoint"  },
-		{ obj: targetPoint, key: null, ref: "targetPoint" },
-	];
-
-	for (let i = 0; i < polygons.length; i++) {
-		for (let j = 0; j < polygons[i].length; j++) {
-			candidates.push({ obj: polygons[i], key: j });
+	if (candidates === null) {
+		
+		candidates = [
+			startPoint, targetPoint,
+		];
+	
+		for (let i = 0; i < polygons.length; i++) {
+			for (let j = 0; j < polygons[i].length; j++) {
+				candidates.push(polygons[i][j]);
+			}
 		}
 	}
 
 	for (const candidate of candidates) {
-		const pt = candidate.key !== null ? candidate.obj[candidate.key] : candidate.obj;
-		const cp = world_to_canvas(pt.x, pt.y);
+		const cp = world_to_canvas(candidate.x, candidate.y);
 		const dx = cp.x - canvas_x;
 		const dy = cp.y - canvas_y;
-		if (Math.sqrt(dx*dx + dy*dy) <= HIT_RADIUS) return candidate;
+
+		if (Math.sqrt(dx*dx + dy*dy) <= HIT_RADIUS) {
+			return candidate;
+		};
 	}
 
 	return null;
@@ -572,90 +608,130 @@ function find_draggable_point(canvas_x, canvas_y) {
 
 function find_draggable_polygon(canvas_x, canvas_y) {
 
-	for (let i = 0; i < polygons.length; i++) {
-		if (point_in_polygon(canvas_to_world(canvas_x, canvas_y), polygons[i])) {
-			return { obj: polygons[i], key: null, canvas_point: {x : canvas_x, y: canvas_y}, original_polygon: polygons[i].map(v => ({x: v.x, y: v.y})) };
+	for (let polygon of polygons) {
+		if (point_in_polygon(canvas_to_world(canvas_x, canvas_y), polygon)) {
+			return polygon; // Drag the whole polygon
 		}
 	}
 
 	return null;
 }
 
-function drag_object(dragging, mouse_position) {
+function drag_objects(dragging, mouse_position) {
 
-	if (!dragging) return;
+	if (!dragging[0]) return;
 
 	// Check if dragging a point or a whole polygon
 	const clamped_mouse = clamp_to_canvas(mouse_position);
 	const world = canvas_to_world(clamped_mouse.x, clamped_mouse.y);
 
-	if (dragging.key !== null) {
-		// Dragging a polygon vertex
-		const pt = dragging.obj[dragging.key];
-		pt.x = world.x;
-		pt.y = world.y;
-	} else if (!Array.isArray(dragging.obj)) {
-		// Dragging the start or target point
-		dragging.obj.x = world.x;
-		dragging.obj.y = world.y;
-	} else {
-		// Dragging a whole polygon
-		
-		const original_canvas_point = dragging.canvas_point;
-		const original_polygon = dragging.original_polygon;
-		const polygon = dragging.obj;
-		const clamped_mouse = clamp_to_canvas(mouse_position);
+	const reference_point = dragging[0];
+	const points_being_dragged = dragging[1];
 
-		const movement_canvas = {
-			x: clamped_mouse.x - original_canvas_point.x,
-			y: clamped_mouse.y - original_canvas_point.y
-		};
+	const relative_movement = {
+		x: world.x - reference_point.x,
+		y: world.y - reference_point.y
+	}
 
-		const movement_world = {
-			x: movement_canvas.x / units_to_pixels,
-			y: -movement_canvas.y / units_to_pixels
-		};
-		
-		for (let i = 0; i < dragging.obj.length; i++) {
-			polygon[i].x = original_polygon[i].x + movement_world.x;
-			polygon[i].y = original_polygon[i].y + movement_world.y;
+	reference_point.x += relative_movement.x;
+	reference_point.y += relative_movement.y;
+
+	for (let point of points_being_dragged) {
+		point.x += relative_movement.x;
+		point.y += relative_movement.y;
+	}
+}
+
+function find_selected_points() {
+
+	selected_points = [];
+
+	const candidates = [
+		startPoint, targetPoint,
+	];
+
+	for (let i = 0; i < polygons.length; i++) {
+		for (let j = 0; j < polygons[i].length; j++) {
+			candidates.push(polygons[i][j]);
 		}
 	}
 
+	const rect_left = Math.min(selection_rect.start.x, selection_rect.end.x);
+	const rect_right = Math.max(selection_rect.start.x, selection_rect.end.x);
+	const rect_top = Math.min(selection_rect.start.y, selection_rect.end.y);
+	const rect_bottom = Math.max(selection_rect.start.y, selection_rect.end.y);
+
+	for (const candidate of candidates) {
+		const cp = world_to_canvas(candidate.x, candidate.y);
+		if (cp.x >= rect_left && cp.x <= rect_right && cp.y >= rect_top && cp.y <= rect_bottom) {
+			selected_points.push(candidate);
+		}
+	}
+}
+
+function update_selection_rect(start_canvas, end_canvas) {
+
+	const copy1 = start_canvas ? { x: start_canvas.x, y: start_canvas.y } : { x: selection_rect.start.x, y: selection_rect.start.y };
+	const copy2 = end_canvas ? { x: end_canvas.x, y: end_canvas.y } : { x: selection_rect.end.x, y: selection_rect.end.y };
+
+	if (!selection_rect) {
+		selection_rect = {
+			start: copy1,
+			end: copy2
+		};
+	} else {
+		selection_rect.start = copy1;
+		selection_rect.end = copy2;
+	}
+
+	find_selected_points();
+}
+
+function unselect_rect() {
+	selected_points_total = new Set([...selected_points_total, ...selected_points]);
+	selection_rect = null;
 }
 
 window.addEventListener("blur", () => {
-    mouse_held = false;
-    dragging = null;
+	mouse_held = false;
+	dragging = null;
 });
 
 document.addEventListener("mouseleave", () => {
-    mouse_held = false;
-    dragging = null;
+	mouse_held = false;
+	dragging = null;
 });
 
 document.addEventListener("mousedown", (e) => {
+
 	const bounds = canvas.getBoundingClientRect();
 	const cx = e.clientX - bounds.left;
 	const cy = e.clientY - bounds.top;
-	const canvas_point = { x: cx, y: cy };
 
-	if (e.shiftKey) {
-		selection_rect = {
-			start: canvas_point,
-			end: canvas_point,
-		};
-		draw();
+	const selection_point = find_draggable_point(cx, cy, selected_points_total);
+
+	if (selection_point) {
+		dragging = [copy_point(selection_point), selected_points_total];
 		return;
 	}
 
-	dragging = find_draggable_point(cx, cy);
-	
-	if (!dragging) {
-		dragging = find_draggable_polygon(cx, cy);
+	const point = find_draggable_point(cx, cy);
+
+	if (point) {
+		dragging = [copy_point(point), [point]];
+	} else {
+		const polygon = find_draggable_polygon(cx, cy);
+
+		if (polygon) {
+			dragging = [canvas_to_world(cx, cy), polygon];
+		}
 	}
 	
-	if (!dragging) mouse_held = true;
+	if (!dragging) {
+		selected_points_total = new Set();
+		selected_points = [];
+		mouse_held = true;
+	}
 });
 
 document.addEventListener("mouseup", () => {
@@ -664,20 +740,24 @@ document.addEventListener("mouseup", () => {
 });
 
 document.addEventListener("mousemove", (e) => {
-	
+
 	const bounds = canvas.getBoundingClientRect();
 	mouse_location.x = e.clientX - bounds.left;
 	mouse_location.y = e.clientY - bounds.top;
 
+	if (e.shiftKey && !selection_rect) {
+		update_selection_rect(mouse_location, mouse_location);
+	} else if (!e.shiftKey && selection_rect) {
+		unselect_rect();
+	}
+	
 	if (selection_rect) {
-		selection_rect.end = { x: mouse_location.x, y: mouse_location.y };
-		draw();
-		return;
+		update_selection_rect(null, mouse_location);
 	}
 
 	if (dragging) {
-		drag_object(dragging, mouse_location);
-		draw();
+		drag_objects(dragging, mouse_location);
+		
 		return;
 	}
 
@@ -691,37 +771,58 @@ document.addEventListener("mousemove", (e) => {
 	if (mouse_held) {
 		camera_center.x -= e.movementX / units_to_pixels;
 		camera_center.y += e.movementY / units_to_pixels;
-		draw();
+		
 	}	
 });
 
 
 canvas.addEventListener("wheel", (e) => {
-	
+
+	e.preventDefault();
+
 	let scale = 1 - e.deltaY * scroll_sensitivity;
 
 	change_zoom(scale, mouse_location);
 	
-	draw();
-});
+	
+	
+}, { passive: false });
 
 document.addEventListener("keydown", (e) => {
-	if (e.key === "w") {camera_center.y += 0.1; draw();};
-	if (e.key === "s") {camera_center.y -= 0.1; draw();};
-	if (e.key === "a") {camera_center.x -= 0.1; draw();};
-	if (e.key === "d") {camera_center.x += 0.1; draw();};
+	if (e.key === "w") {camera_center.y += 0.1;};
+	if (e.key === "s") {camera_center.y -= 0.1;};
+	if (e.key === "a") {camera_center.x -= 0.1;};
+	if (e.key === "d") {camera_center.x += 0.1;};
 
 	if (e.key === "=") {
 		change_zoom(1.1, canvas_center());
-		draw();
+		
 	}
 
 	if (e.key === "-") {
 		change_zoom(1 / 1.1, canvas_center());
-		draw();
+		
 	}
 
 	if (e.key === "t") {
 		toggleTheme();
 	}
+
+	if (e.key === "Shift") {
+		update_selection_rect(mouse_location, mouse_location);
+	}
 });
+
+document.addEventListener("keyup", (e) => {
+	if (e.key === "Shift") {
+		// capture points here before clearing
+		unselect_rect();
+	}
+});
+
+function loop() {
+	draw();
+	requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
