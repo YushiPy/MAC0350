@@ -52,9 +52,11 @@ let selected_points_total = new Set();
 // { start: {x, y}, end: {x, y} } in canvas coordinates, or null if not selecting
 let selection_rect = null; 
 
-// Index of the polygon being edited, 
-// or -1 if not editing any polygon (e.g. dragging the whole polygon)
+// Index of the polygon being edited
 let current_polygon = 0;
+
+// Index of the vertex being edited in the current polygon
+let current_polygon_vertex = 0; 
 
 function copy_point(point) {
 	return { x: point.x, y: point.y };
@@ -132,6 +134,17 @@ function draw_line(x1, y1, x2, y2, color = "black", lineWidth = 1) {
 	ctx.strokeStyle = color;
 	ctx.lineWidth = lineWidth;
 	ctx.stroke();
+}
+
+function draw_glowing_line(x1, y1, x2, y2, color) {
+	ctx.save();
+	ctx.shadowColor = color;
+	ctx.shadowBlur = 20;
+	// Draw the line multiple times to intensify the glow
+	for (let i = 0; i < 3; i++) {
+		draw_line(x1, y1, x2, y2, color, 2);
+	}
+	ctx.restore();
 }
 
 function draw_point(x, y, radius, color = "black") {
@@ -533,6 +546,21 @@ function draw() {
 		}
 	}
 
+	if (polygons.length > 0) {
+
+		const polygon = polygons[current_polygon % polygons.length];
+		const v1 = polygon[((current_polygon_vertex - 1) % polygon.length + polygon.length) % polygon.length];
+		const v2 = polygon[(current_polygon_vertex) % polygon.length];
+
+		const mouse_world = canvas_to_world(mouse_location.x, mouse_location.y);
+
+		const polygon_color = polygonColors[current_polygon % polygonColors.length];
+
+		// Draw dashed glowing line between v1 and mouse position
+		draw_glowing_line(v1.x, v1.y, mouse_world.x, mouse_world.y, polygon_color);
+		draw_glowing_line(v2.x, v2.y, mouse_world.x, mouse_world.y, polygon_color);
+	}
+
 	if (selection_rect !== null) {
 		const rect = {
 			start: selection_rect.start,
@@ -882,8 +910,6 @@ document.addEventListener("keydown", (e) => {
 	if (e.key === "ArrowDown") {current_polygon--;}
 
 	if (e.key === "Backspace" || e.key === "Delete" || e.key === "x") {
-
-		console.log("Deleting points:", selected_points_total);
 		if (selected_points_total.size > 0) {
 			// Check if all vertices are in selected_points_total, if so, remove the whole polygon
 			polygons = polygons.filter(polygon => !polygon.every(vertex => selected_points_total.has(vertex)));
