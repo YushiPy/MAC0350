@@ -34,8 +34,11 @@ let targetPoint = { x: 1, y: 0};
 
 let polygons = [
 	[{ x: 0.5, y: 0.5 }, { x: 1.5, y: 0.5 }, { x: 1, y: 1 }],
-	[{ x: -0.5, y: -0.5 }, { x: -1.5, y: -0.5 }, { x: -1, y: -1 }],
+	[{ x: -0.5, y: 0.0 }, { x: -1.5, y: -0.5 }, { x: -1, y: -1 }, { x: -0.5, y: -1 }, { x: 0.5, y: -0.5 }],
 ]
+
+// { start: {x, y}, end: {x, y} } in canvas coordinates, or null if not selecting
+let selection_rect = null; 
 
 function canvas_center() {
 	return {
@@ -147,6 +150,40 @@ function draw_polygon(points, color = "black") {
 	ctx.stroke();
 }
 
+function color_add_alpha(color, alpha) {
+	// Adds alpha to a color string in any format (e.g. "red", "#ff0000", "rgb(255, 0, 0)", etc.)
+	// Returns the color in rgba format (e.g. "rgba(255, 0, 0, 0.5)")
+
+	const tmp = document.createElement("div");
+	tmp.style.color = color;
+	document.body.appendChild(tmp);
+	const computed = getComputedStyle(tmp).color;
+	document.body.removeChild(tmp);
+	const [r, g, b] = computed.match(/\d+/g).map(Number);
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function draw_selection_rect(rect, color = "black") {
+	
+	const p1 = world_to_canvas(rect.start.x, rect.start.y);
+	const p2 = world_to_canvas(rect.end.x, rect.end.y);
+
+	const left = Math.min(p1.x, p2.x);
+	const top = Math.min(p1.y, p2.y);
+	const width = Math.abs(p1.x - p2.x);
+	const height = Math.abs(p1.y - p2.y);
+
+	ctx.strokeStyle = color;
+	ctx.lineWidth = 1.5;
+	ctx.setLineDash([5, 3]);
+	ctx.strokeRect(left, top, width, height);
+	
+	ctx.fillStyle = color_add_alpha(color, 0.4);
+	ctx.fillRect(left, top, width, height);
+
+	ctx.setLineDash([]);
+}
+
 function get_grid_scale(minimum_grid_spacing = min_grid_spacing) {
 	/*
 	Returns `scale` such that every grid line is drawn at integer multiples of `scale`, 
@@ -175,20 +212,43 @@ function get_grid_scale(minimum_grid_spacing = min_grid_spacing) {
 	}	
 }
 
+function float_to_string(integer_part, exponent) {
+
+	if (Math.abs(exponent) >= 5) {
+		return integer_part.toString() + "e" + exponent.toString();
+	}
+
+	let string = (integer_part * Math.pow(10, exponent)).toFixed(6);
+
+	// Split string into integer and decimal parts
+	let [integer_str, decimal_str] = string.split(".");
+
+	if (!decimal_str) {
+		decimal_str = "";
+	}
+
+	decimal_str = decimal_str.replace(/\.?0+$/, ""); // Remove trailing zeros and optional decimal point
+
+	return integer_str + (decimal_str ? "." + decimal_str : "");
+}
+
 function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 
 	const decision_value = minimum_grid_spacing / units_to_pixels;
 
-	const exponent = Math.ceil(Math.log10(decision_value));
+	let exponent = Math.ceil(Math.log10(decision_value)) | 0;
+	let multiplier = 1;
 	let grid_scale = Math.pow(10, exponent);
 
 	let sub_grid_count = 4;
 
 	if (grid_scale / 5 > decision_value) {
-		grid_scale /= 5;
 		sub_grid_count = 3;
+		exponent--;
+		multiplier = 2;
 	} else if (grid_scale / 2 > decision_value) {
-		grid_scale /= 2;
+		exponent--;
+		multiplier = 5;
 	}
 
 	const half_width = canvas.offsetWidth / 2 / units_to_pixels;
@@ -206,9 +266,21 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 	const canvas_top = camera_center.y + half_height;
 	const canvas_bottom = camera_center.y - half_height;
 
-	let x_start = Math.floor((camera_center.x - half_width) / grid_scale) * grid_scale;
+	// let x_start = Math.floor((camera_center.x - half_width) / grid_scale) * grid_scale;
 	
-	let text_fixed_y = world_to_canvas(0, 0).y + 3;
+	const grid_spacing = Math.pow(10, exponent) * multiplier
+
+	const integer_part_start_x = Math.floor((camera_center.x - half_width) / grid_spacing) * multiplier;
+	const grid_count_x = Math.ceil(half_width * 2 / grid_spacing);
+
+	const integer_part_start_y = Math.floor((camera_center.y - half_height) / grid_spacing) * multiplier;
+	const grid_count_y = Math.ceil(half_height * 2 / grid_spacing);
+
+	// offset pixels for text
+	const y_offset = +3; 
+	const x_offset = -8;
+
+	let text_fixed_y = world_to_canvas(0, 0).y + y_offset;
 	let text_horizontal_color = number_text_color;
 
 	if (text_fixed_y < 0) {
@@ -221,30 +293,7 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 		text_fixed_y += 2;
 	}
 
-	while (x_start < camera_center.x + half_width) {
-
-		draw_line(x_start, canvas_bottom, x_start, canvas_top, grid_color);
-
-		// Write number next to the grid line
-		if (Math.abs(x_start) > 1e-10) {
-
-			const text_x = world_to_canvas(x_start, 0).x;
-			ctx.fillStyle = text_horizontal_color;
-			ctx.font = number_text_font;
-			ctx.textAlign = "center";
-			ctx.textBaseline = "top";
-			ctx.fillText(x_start.toString(), text_x, text_fixed_y);
-		}
-
-		for (let i = 0; i < sub_grid_count; i++) {
-			const sub_grid_x = x_start + grid_scale * (i + 1) / (sub_grid_count + 1);
-			draw_line(sub_grid_x, canvas_bottom, sub_grid_x, canvas_top, sub_grid_color);
-		}
-
-		x_start += grid_scale;
-	}
-
-	let text_fixed_x = world_to_canvas(0, 0).x - 8;
+	let text_fixed_x = world_to_canvas(0, 0).x + x_offset;
 	let text_vertical_color = number_text_color;
 
 	if (text_fixed_x < 20) {
@@ -256,43 +305,73 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 	} else {
 		text_fixed_x += 2;
 	}
-	
-	let y_start = Math.floor((camera_center.y - half_height) / grid_scale) * grid_scale;
-	
-	while (y_start < camera_center.y + half_height) {
 
-		draw_line(canvas_left, y_start, canvas_right, y_start, grid_color);
+	for (let i = 0; i <= grid_count_x; i++) {
+		
+		const integer_part = integer_part_start_x + i * multiplier;
+		const x_world = integer_part * Math.pow(10, exponent);
 
-		// Write number next to the grid line
-		if (Math.abs(y_start) > 1e-10) {
+		draw_line(x_world, canvas_bottom, x_world, canvas_top, grid_color);
 
-			const text_y = world_to_canvas(0, y_start).y;
-			ctx.fillStyle = text_vertical_color;
-			ctx.font = number_text_font;
-			ctx.textAlign = "right";
-			let text_x = text_fixed_x;
-			if (text_fixed_x == -1) {
-				ctx.textAlign = "left";
-				text_x = 10;
-			}
-			ctx.textBaseline = "middle";
-			ctx.fillText(y_start.toString(), text_x, text_y);
+		for (let j = 0; j < sub_grid_count; j++) {
+			const sub_grid_x = x_world + grid_spacing * (j + 1) / (sub_grid_count + 1);
+			draw_line(sub_grid_x, canvas_bottom, sub_grid_x, canvas_top, sub_grid_color);
 		}
 
-		for (let i = 0; i < sub_grid_count; i++) {
-			const sub_grid_y = y_start + grid_scale * (i + 1) / (sub_grid_count + 1);
+		// Write number next to the grid line
+		if (Math.abs(x_world) > 1e-12) {
+			
+			const text_x_position = world_to_canvas(x_world, 0).x;
+			const text = float_to_string(integer_part, exponent);
+			
+			ctx.fillStyle = text_horizontal_color;
+			ctx.font = number_text_font;
+			ctx.textAlign = "center";
+			ctx.textBaseline = "top";
+			ctx.fillText(text, text_x_position, text_fixed_y);
+		}
+	}
+
+	for (let i = 0; i <= grid_count_y; i++) {
+		
+		const integer_part = integer_part_start_y + i * multiplier;
+		const y_world = integer_part * Math.pow(10, exponent);
+
+		draw_line(canvas_left, y_world, canvas_right, y_world, grid_color);
+
+		for (let j = 0; j < sub_grid_count; j++) {
+			const sub_grid_y = y_world + grid_spacing * (j + 1) / (sub_grid_count + 1);
 			draw_line(canvas_left, sub_grid_y, canvas_right, sub_grid_y, sub_grid_color);
 		}
 
-		y_start += grid_scale;
+		// Write number next to the grid line
+		if (Math.abs(y_world) > 1e-12) {
+
+			const text_y_position = world_to_canvas(0, y_world).y;
+			const text = float_to_string(integer_part, exponent);
+			
+			ctx.fillStyle = text_vertical_color;
+			ctx.font = number_text_font;
+			ctx.textAlign = "right";
+
+			let text_x = text_fixed_x;
+
+			if (text_fixed_x === -1) {
+				ctx.textAlign = "left";
+				text_x = 10;
+			}
+
+			ctx.textBaseline = "middle";
+			ctx.fillText(text, text_x, text_y_position);
+		}
 	}
 
 	// Draw 0 on bottom left corner:
 
 	let zero_position = world_to_canvas(0, 0);
 
-	let zero_x = zero_position.x - 8;
-	let zero_y = zero_position.y + 3;
+	let zero_x = zero_position.x + x_offset;
+	let zero_y = zero_position.y + y_offset;
 
 	ctx.fillStyle = number_text_color;
 	ctx.font = number_text_font;
@@ -337,6 +416,14 @@ function draw() {
 			draw_point(vertex.x, vertex.y, pointRadius * 0.6, polygonColor);
 		}
 	}
+
+	if (selection_rect) {
+		const rect_world = {
+			start: canvas_to_world(selection_rect.start.x, selection_rect.start.y),
+			end: canvas_to_world(selection_rect.end.x, selection_rect.end.y)
+		};
+		draw_selection_rect(rect_world, axisColor);
+	}
 }
 
 
@@ -348,6 +435,20 @@ function change_zoom(scale, fixed_canvas_point) {
 	camera_center.y = fixed_point_world.y - (fixed_point_world.y - camera_center.y) / scale;
 
 	units_to_pixels *= scale;
+}
+
+function point_in_polygon(point, polygon) {
+	// Ray-casting algorithm to determine if the point is inside the polygon
+	let inside = false;
+	for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+		const xi = polygon[i].x, yi = polygon[i].y;
+		const xj = polygon[j].x, yj = polygon[j].y;
+
+		const intersect = ((yi > point.y) !== (yj > point.y)) &&
+			(point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+		if (intersect) inside = !inside;
+	}
+	return inside;
 }
 
 let manualOverride = false;
@@ -469,6 +570,60 @@ function find_draggable_point(canvas_x, canvas_y) {
 	return null;
 }
 
+function find_draggable_polygon(canvas_x, canvas_y) {
+
+	for (let i = 0; i < polygons.length; i++) {
+		if (point_in_polygon(canvas_to_world(canvas_x, canvas_y), polygons[i])) {
+			return { obj: polygons[i], key: null, canvas_point: {x : canvas_x, y: canvas_y}, original_polygon: polygons[i].map(v => ({x: v.x, y: v.y})) };
+		}
+	}
+
+	return null;
+}
+
+function drag_object(dragging, mouse_position) {
+
+	if (!dragging) return;
+
+	// Check if dragging a point or a whole polygon
+	const clamped_mouse = clamp_to_canvas(mouse_position);
+	const world = canvas_to_world(clamped_mouse.x, clamped_mouse.y);
+
+	if (dragging.key !== null) {
+		// Dragging a polygon vertex
+		const pt = dragging.obj[dragging.key];
+		pt.x = world.x;
+		pt.y = world.y;
+	} else if (!Array.isArray(dragging.obj)) {
+		// Dragging the start or target point
+		dragging.obj.x = world.x;
+		dragging.obj.y = world.y;
+	} else {
+		// Dragging a whole polygon
+		
+		const original_canvas_point = dragging.canvas_point;
+		const original_polygon = dragging.original_polygon;
+		const polygon = dragging.obj;
+		const clamped_mouse = clamp_to_canvas(mouse_position);
+
+		const movement_canvas = {
+			x: clamped_mouse.x - original_canvas_point.x,
+			y: clamped_mouse.y - original_canvas_point.y
+		};
+
+		const movement_world = {
+			x: movement_canvas.x / units_to_pixels,
+			y: -movement_canvas.y / units_to_pixels
+		};
+		
+		for (let i = 0; i < dragging.obj.length; i++) {
+			polygon[i].x = original_polygon[i].x + movement_world.x;
+			polygon[i].y = original_polygon[i].y + movement_world.y;
+		}
+	}
+
+}
+
 window.addEventListener("blur", () => {
     mouse_held = false;
     dragging = null;
@@ -483,8 +638,23 @@ document.addEventListener("mousedown", (e) => {
 	const bounds = canvas.getBoundingClientRect();
 	const cx = e.clientX - bounds.left;
 	const cy = e.clientY - bounds.top;
+	const canvas_point = { x: cx, y: cy };
+
+	if (e.shiftKey) {
+		selection_rect = {
+			start: canvas_point,
+			end: canvas_point,
+		};
+		draw();
+		return;
+	}
 
 	dragging = find_draggable_point(cx, cy);
+	
+	if (!dragging) {
+		dragging = find_draggable_polygon(cx, cy);
+	}
+	
 	if (!dragging) mouse_held = true;
 });
 
@@ -494,23 +664,29 @@ document.addEventListener("mouseup", () => {
 });
 
 document.addEventListener("mousemove", (e) => {
-
+	
 	const bounds = canvas.getBoundingClientRect();
 	mouse_location.x = e.clientX - bounds.left;
 	mouse_location.y = e.clientY - bounds.top;
 
-	if (dragging) {
-		const clamped_mouse = clamp_to_canvas(mouse_location);
-		const world = canvas_to_world(clamped_mouse.x, clamped_mouse.y);
-		const pt = dragging.key !== null ? dragging.obj[dragging.key] : dragging.obj;
-
-		pt.x = world.x;
-		pt.y = world.y;
+	if (selection_rect) {
+		selection_rect.end = { x: mouse_location.x, y: mouse_location.y };
 		draw();
 		return;
 	}
 
-	canvas.style.cursor = find_draggable_point(mouse_location.x, mouse_location.y) ? "pointer" : "default";
+	if (dragging) {
+		drag_object(dragging, mouse_location);
+		draw();
+		return;
+	}
+
+	if (find_draggable_point(mouse_location.x, mouse_location.y) || find_draggable_polygon(mouse_location.x, mouse_location.y)) {
+		canvas.style.cursor = "move";
+	} else {
+		canvas.style.cursor = "default";
+	}
+
 
 	if (mouse_held) {
 		camera_center.x -= e.movementX / units_to_pixels;
