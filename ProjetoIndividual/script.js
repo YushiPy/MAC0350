@@ -458,6 +458,7 @@ function draw_solution() {
 	}
 	catch (e) {
 		console.error("Error solving TPP:", e);
+		console.error([start, target, polys]);
 		return;
 	}
 
@@ -647,13 +648,13 @@ function find_draggable_point(canvas_x, canvas_y, candidates = null) {
 
 function find_draggable_polygon(canvas_x, canvas_y) {
 
-	for (let polygon of polygons) {
-		if (point_in_polygon(canvas_to_world(canvas_x, canvas_y), polygon)) {
-			return polygon; // Drag the whole polygon
+	for (let i = 0; i < polygons.length; i++) {
+		if (point_in_polygon(canvas_to_world(canvas_x, canvas_y), polygons[i])) {
+			return i; // Drag the whole polygon
 		}
 	}
 
-	return null;
+	return -1;
 }
 
 function drag_objects(dragging, mouse_position) {
@@ -741,11 +742,17 @@ document.addEventListener("mouseleave", () => {
 	dragging = null;
 });
 
+let last_click_time = 0;
+let last_click_position = { x: 0, y: 0 };
+
 document.addEventListener("mousedown", (e) => {
 
 	const bounds = canvas.getBoundingClientRect();
 	const cx = e.clientX - bounds.left;
 	const cy = e.clientY - bounds.top;
+
+	last_click_time = performance.now();
+	last_click_position = { x: cx, y: cy };
 
 	const selection_point = find_draggable_point(cx, cy, selected_points_total);
 
@@ -759,23 +766,40 @@ document.addEventListener("mousedown", (e) => {
 	if (point) {
 		dragging = [copy_point(point), [point]];
 	} else {
-		const polygon = find_draggable_polygon(cx, cy);
+		const polygon_index = find_draggable_polygon(cx, cy);
 
-		if (polygon) {
-			dragging = [canvas_to_world(cx, cy), polygon];
+		if (polygon_index !== -1) {
+			dragging = [canvas_to_world(cx, cy), polygons[polygon_index]];
+			current_polygon = polygon_index;
 		}
 	}
-	
+
 	if (!dragging) {
-		selected_points_total = new Set();
-		selected_points = [];
 		mouse_held = true;
 	}
 });
 
-document.addEventListener("mouseup", () => {
+document.addEventListener("mouseup", (e) => {
+	
 	mouse_held = false;
-	dragging = null;
+	
+	if (dragging) {
+		dragging = null;
+		return;
+	}
+
+	const is_recent = performance.now() - last_click_time < 300;
+	const is_close = Math.hypot(mouse_location.x - last_click_position.x, mouse_location.y - last_click_position.y) < HIT_RADIUS;
+
+	if (is_recent && is_close && polygons.length > 0) {
+
+		const clamped_mouse = clamp_to_canvas(mouse_location);
+		const world = canvas_to_world(clamped_mouse.x, clamped_mouse.y);
+
+		const polygon = polygons[current_polygon % polygons.length];
+
+		polygon.push({ x: world.x, y: world.y });
+	}
 });
 
 document.addEventListener("mousemove", (e) => {
@@ -800,7 +824,7 @@ document.addEventListener("mousemove", (e) => {
 		return;
 	}
 
-	if (find_draggable_point(mouse_location.x, mouse_location.y) || find_draggable_polygon(mouse_location.x, mouse_location.y)) {
+	if (find_draggable_point(mouse_location.x, mouse_location.y) || find_draggable_polygon(mouse_location.x, mouse_location.y) !== -1) {
 		canvas.style.cursor = "move";
 	} else {
 		canvas.style.cursor = "default";
@@ -826,6 +850,9 @@ canvas.addEventListener("wheel", (e) => {
 	
 	
 }, { passive: false });
+
+let last_shift_press_time = 0;
+let last_shift_press_position = { x: 0, y: 0 };
 
 document.addEventListener("keydown", (e) => {
 	if (e.key === "w") {camera_center.y += 0.1;};
@@ -853,12 +880,53 @@ document.addEventListener("keydown", (e) => {
 
 	if (e.key === "ArrowUp") {current_polygon++;}
 	if (e.key === "ArrowDown") {current_polygon--;}
+
+	if (e.key === "Backspace" || e.key === "Delete" || e.key === "x") {
+
+		console.log("Deleting points:", selected_points_total);
+		if (selected_points_total.size > 0) {
+			// Check if all vertices are in selected_points_total, if so, remove the whole polygon
+			polygons = polygons.filter(polygon => !polygon.every(vertex => selected_points_total.has(vertex)));
+
+			for (let point of selected_points_total) {
+				for (let i = 0; i < polygons.length; i++) {
+
+					const polygon = polygons[i];
+
+					if (polygon.length <= 3) {
+						continue;
+					}
+
+					const index = polygons[i].indexOf(point);
+					if (index !== -1) {
+						polygons[i] = polygons[i].filter(p => p !== point);
+						break;
+					}
+				}
+			}
+
+			selected_points_total = new Set();
+			selected_points = [];
+		}
+	}
 });
 
 document.addEventListener("keyup", (e) => {
 	if (e.key === "Shift") {
 		// capture points here before clearing
 		unselect_rect();
+
+		const is_recent = last_shift_press_time && (performance.now() - last_shift_press_time < 300);
+		const is_close = Math.hypot(mouse_location.x - last_shift_press_position.x, mouse_location.y - last_shift_press_position.y) < HIT_RADIUS;
+
+		if (is_recent && is_close) {
+			// Clear total selection if shift was just tapped
+			selected_points_total = new Set(); 
+			selected_points = [];
+		}
+
+		last_shift_press_time = performance.now();
+		last_shift_press_position = { x: mouse_location.x, y: mouse_location.y };
 	}
 });
 
