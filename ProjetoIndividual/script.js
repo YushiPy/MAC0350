@@ -446,6 +446,7 @@ let dragging = null; // { obj, key } — the object and key being dragged
 const HIT_RADIUS = 10; // pixels
 
 function find_draggable_point(canvas_x, canvas_y) {
+
 	const candidates = [
 		{ obj: startPoint,  key: null, ref: "startPoint"  },
 		{ obj: targetPoint, key: null, ref: "targetPoint" },
@@ -467,7 +468,18 @@ function find_draggable_point(canvas_x, canvas_y) {
 
 	return null;
 }
-canvas.addEventListener("mousedown", (e) => {
+
+window.addEventListener("blur", () => {
+    mouse_held = false;
+    dragging = null;
+});
+
+document.addEventListener("mouseleave", () => {
+    mouse_held = false;
+    dragging = null;
+});
+
+document.addEventListener("mousedown", (e) => {
 	const bounds = canvas.getBoundingClientRect();
 	const cx = e.clientX - bounds.left;
 	const cy = e.clientY - bounds.top;
@@ -476,20 +488,22 @@ canvas.addEventListener("mousedown", (e) => {
 	if (!dragging) mouse_held = true;
 });
 
-canvas.addEventListener("mouseup", () => {
+document.addEventListener("mouseup", () => {
 	mouse_held = false;
 	dragging = null;
 });
 
-canvas.addEventListener("mousemove", (e) => {
+document.addEventListener("mousemove", (e) => {
 
 	const bounds = canvas.getBoundingClientRect();
 	mouse_location.x = e.clientX - bounds.left;
 	mouse_location.y = e.clientY - bounds.top;
 
 	if (dragging) {
-		const world = canvas_to_world(mouse_location.x, mouse_location.y);
+		const clamped_mouse = clamp_to_canvas(mouse_location);
+		const world = canvas_to_world(clamped_mouse.x, clamped_mouse.y);
 		const pt = dragging.key !== null ? dragging.obj[dragging.key] : dragging.obj;
+
 		pt.x = world.x;
 		pt.y = world.y;
 		draw();
