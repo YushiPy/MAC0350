@@ -1,7 +1,10 @@
 
-// HTML SOURCE
+// HTML SOURCE SERVER
 // The above comment indicates that this file is referenced in an HTML file 
 // and should be ran from the context of that HTML file, not directly.
+
+// import { tppSolve } from "tpp.js";
+import { tppSolve } from "./tpp.js";
 
 const canvas = document.getElementById("drawing-canvas");
 const ctx = canvas.getContext("2d");
@@ -194,34 +197,6 @@ function draw_selection_rect(rect, color = "black") {
 	ctx.setLineDash([]);
 }
 
-function get_grid_scale(minimum_grid_spacing = min_grid_spacing) {
-	/*
-	Returns `scale` such that every grid line is drawn at integer multiples of `scale`, 
-	and the distance between grid lines is at least `min_grid_spacing` pixels.
-
-	The value of `scale` is always a power of 10 multiplied by 1, 2 or 5, so that 
-	the grid lines are drawn at "nice" numbers (e.g. 0.1, 0.2, 0.5, 1, 2, 5, 10, etc.)
-	*/
-
-
-	// x is a valid grid scale if (canvas_width / units_to_pixels) / x < (canvas_width / min_grid_spacing)
-	// -> x is a valid grid scale if x > min_grid_spacing / units_to_pixels
-	// -> 10 ^ e is a valid if e > \log_{10}(min_grid_spacing / units_to_pixels)
-
-	let decision_value = minimum_grid_spacing / units_to_pixels;
-
-	let exponent = Math.ceil(Math.log10(decision_value));
-	let base_scale = Math.pow(10, exponent);
-
-	if (base_scale / 5 > decision_value) {
-		return base_scale / 5;
-	} else if (base_scale / 2 > decision_value) {
-		return base_scale / 2;
-	} else {
-		return base_scale;
-	}	
-}
-
 function float_to_string(integer_part, exponent) {
 
 	if (Math.abs(exponent) >= 5) {
@@ -390,6 +365,54 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 	ctx.fillText("0", zero_x, zero_y);
 }
 
+function polygon_is_convex(polygon) {
+
+	let got_negative = false;
+	let got_positive = false;
+
+	for (let i = 0; i < polygon.length; i++) {
+		const p0 = polygon[i];
+		const p1 = polygon[(i + 1) % polygon.length];
+		const p2 = polygon[(i + 2) % polygon.length];
+
+		const cross_product = (p1.x - p0.x) * (p2.y - p1.y) - (p1.y - p0.y) * (p2.x - p1.x);
+
+		if (cross_product < 0) {
+			got_negative = true;
+		} else if (cross_product > 0) {
+			got_positive = true;
+		}
+
+		if (got_negative && got_positive) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function draw_solution() {
+
+	for (let polygon of polygons) {
+		if (!polygon_is_convex(polygon)) {
+			return;
+		}
+	}
+
+	const start = [startPoint.x, startPoint.y];
+	const target = [targetPoint.x, targetPoint.y];
+	const polys = polygons.map(polygon => polygon.map(vertex => [vertex.x, vertex.y]));
+
+	const path = tppSolve(start, target, polys, true);
+
+	// Draw the path as a series of line segments between the points in the path
+	for (let i = 0; i < path.length - 1; i++) {
+		const p1 = path[i];
+		const p2 = path[i + 1];
+		draw_line(p1.x, p1.y, p2.x, p2.y, "magenta", 3);
+	}
+}
+
 function draw() {
 
 	ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
@@ -404,6 +427,8 @@ function draw() {
 	// Draw main axis
 	draw_line(0, Number.NEGATIVE_INFINITY, 0, Number.POSITIVE_INFINITY, axisColor, 1.5);
 	draw_line(Number.NEGATIVE_INFINITY, 0, Number.POSITIVE_INFINITY, 0, axisColor, 1.5);
+
+	draw_solution();
 
 	const startPointColor = style.getPropertyValue("--start-point-color").trim();
 	const targetPointColor = style.getPropertyValue("--target-point-color").trim();
@@ -424,6 +449,19 @@ function draw() {
 		for (let j = 0; j < polygons[i].length; j++) {
 			const vertex = polygons[i][j];
 			draw_point(vertex.x, vertex.y, pointRadius * 0.6, polygonColor);
+		}
+
+		if (!polygon_is_convex(polygons[i])) {
+
+			ctx.font = "16px sans-serif";
+			ctx.fillStyle = "red";
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+
+			const center = polygons[i].reduce((acc, p) => ({ x: acc.x + p.x / polygons[i].length, y: acc.y + p.y / polygons[i].length }), { x: 0, y: 0 });
+			const canvas_center_point = world_to_canvas(center.x, center.y);
+
+			ctx.fillText("NOT CONVEX", canvas_center_point.x, canvas_center_point.y);
 		}
 	}
 
