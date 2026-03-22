@@ -17,7 +17,15 @@
 
 	--start-point-color: rgb(124, 189, 93);
 	--target-point-color: rgb(188, 47, 47);
-	--polygon-colors: #0000FF, #FFFF00, #FF00FF, #00FFFF, #FF0000, #00FF00;
+
+	--polygon-color-1: #0000FF;
+	--polygon-color-2: #FFFF00;
+	--polygon-color-3: #FF00FF;
+	--polygon-color-4: #00FFFF;
+	--polygon-color-5: #FF0000;
+	--polygon-color-6: #00FF00;
+
+	--solution-color: rgb(47, 114, 220);
 
 	--point-radius: 8px;
 
@@ -30,7 +38,7 @@
 
 	--header-height: 46px;
 
-	--background-transition-duration: 0.3s;
+	--background-transition-duration: 0.1s;
 }
 
 [data-theme="dark"] {
@@ -47,7 +55,15 @@
 
 	--start-point-color: #00FFFF;
 	--target-point-color: #FF00FF;
-	--polygon-colors: #FFFF00, #0000FF, #00FF00, #FF0000, #00FFFF, #FF00FF;
+
+	--polygon-color-1: #FFFF00;
+	--polygon-color-2: #0000FF;
+	--polygon-color-3: #00FF00;
+	--polygon-color-4: #FF0000;
+	--polygon-color-5: #00FFFF;
+	--polygon-color-6: #FF00FF;
+
+	--solution-color: rgb(220, 157, 47);
 
 	--number-text-color: #E0E0E0;
 	--number-text-light-color: #777777;

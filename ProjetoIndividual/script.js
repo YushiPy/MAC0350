@@ -17,6 +17,9 @@ const resize_observer = new ResizeObserver(() => {
 	
 });
 
+const POLYGON_COLOR_COUNT = 6; // however many you have
+
+
 resize_observer.observe(canvas);
 
 let camera_center = { x: 0, y: 0 };
@@ -48,6 +51,10 @@ let selected_points_total = new Set();
 
 // { start: {x, y}, end: {x, y} } in canvas coordinates, or null if not selecting
 let selection_rect = null; 
+
+// Index of the polygon being edited, 
+// or -1 if not editing any polygon (e.g. dragging the whole polygon)
+let current_polygon = 0;
 
 function copy_point(point) {
 	return { x: point.x, y: point.y };
@@ -161,6 +168,44 @@ function draw_polygon(points, color = "black") {
 	ctx.strokeStyle = color;
 	ctx.lineWidth = 2;
 	ctx.stroke();
+}
+
+function draw_polygon_glowing(points, color) {
+	ctx.save();
+	ctx.shadowColor = color;
+	ctx.shadowBlur = 20;
+	// Draw the stroke multiple times to intensify the glow
+	for (let i = 0; i < 3; i++) {
+		ctx.beginPath();
+		const first = world_to_canvas(points[0].x, points[0].y);
+		ctx.moveTo(first.x, first.y);
+		for (let j = 1; j < points.length; j++) {
+			const p = world_to_canvas(points[j].x, points[j].y);
+			ctx.lineTo(p.x, p.y);
+		}
+		ctx.closePath();
+		ctx.strokeStyle = color;
+		ctx.lineWidth = 2;
+		ctx.stroke();
+	}
+	ctx.restore();
+}
+
+function draw_polygon_outline_dashed(points, color) {
+	ctx.save();
+	ctx.beginPath();
+	const first = world_to_canvas(points[0].x, points[0].y);
+	ctx.moveTo(first.x, first.y);
+	for (let i = 1; i < points.length; i++) {
+		const p = world_to_canvas(points[i].x, points[i].y);
+		ctx.lineTo(p.x, p.y);
+	}
+	ctx.closePath();
+	ctx.strokeStyle = color;
+	ctx.lineWidth = 2;
+	ctx.setLineDash([8, 4]);
+	ctx.stroke();
+	ctx.restore();
 }
 
 function color_add_alpha(color, alpha) {
@@ -399,17 +444,29 @@ function draw_solution() {
 		}
 	}
 
+	const style = getComputedStyle(document.documentElement);
+	const solution_color = style.getPropertyValue("--solution-color").trim();
+
 	const start = [startPoint.x, startPoint.y];
 	const target = [targetPoint.x, targetPoint.y];
 	const polys = polygons.map(polygon => polygon.map(vertex => [vertex.x, vertex.y]));
 
-	const path = tppSolve(start, target, polys, true);
+	let path;
+
+	try {
+		path = tppSolve(start, target, polys, true);
+	}
+	catch (e) {
+		console.error("Error solving TPP:", e);
+		return;
+	}
 
 	// Draw the path as a series of line segments between the points in the path
 	for (let i = 0; i < path.length - 1; i++) {
 		const p1 = path[i];
 		const p2 = path[i + 1];
-		draw_line(p1.x, p1.y, p2.x, p2.y, "magenta", 3);
+		draw_line(p1.x, p1.y, p2.x, p2.y, solution_color, 3);
+		draw_point(p1.x, p1.y, 6, solution_color);
 	}
 }
 
@@ -438,7 +495,11 @@ function draw() {
 	draw_point(startPoint.x, startPoint.y, pointRadius, startPointColor);
 	draw_point(targetPoint.x, targetPoint.y, pointRadius, targetPointColor);
 
-	let polygonColors = style.getPropertyValue("--polygon-colors").trim().split(",").map(s => s.trim());
+	// instead of splitting --polygon-colors:
+	const polygonColors = Array.from({length: POLYGON_COLOR_COUNT}, (_, i) =>
+		style.getPropertyValue(`--polygon-color-${i+1}`).trim()
+	);
+
 
 	for (let i = 0; i < polygons.length; i++) {
 
@@ -462,6 +523,12 @@ function draw() {
 			const canvas_center_point = world_to_canvas(center.x, center.y);
 
 			ctx.fillText("NOT CONVEX", canvas_center_point.x, canvas_center_point.y);
+		}
+
+		if (current_polygon % polygons.length === i) {
+			draw_polygon_glowing(polygons[i], polygonColor);
+			const backgroundColor = style.getPropertyValue("--axis-color").trim();
+			draw_polygon_outline_dashed(polygons[i], backgroundColor);
 		}
 	}
 
@@ -526,76 +593,10 @@ function applyTheme() {
 	document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
 }
 
-function parse_color(str) {
-	const tmp = document.createElement("div");
-	tmp.style.color = str;
-	document.body.appendChild(tmp);
-	const computed = getComputedStyle(tmp).color;
-	document.body.removeChild(tmp);
-	const [r, g, b] = computed.match(/\d+/g).map(Number);
-	return { r, g, b };
-}
-
-function lerp_color(a, b, t) {
-	return `rgb(${Math.round(a.r + (b.r - a.r) * t)}, ${Math.round(a.g + (b.g - a.g) * t)}, ${Math.round(a.b + (b.b - a.b) * t)})`;
-}
-
-function ease_in_out(t) {
-	return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-}
-
-const CANVAS_VARS = [
-	"--background-color",
-	"--axis-color",
-	"--grid-color",
-	"--sub-grid-color",
-	"--number-text-color",
-	"--number-text-light-color",
-	"--start-point-color",
-];
-
-let toggleAnimationId = null;
-let currentT = 1; // 1 = fully settled, 0 = just started
-
 function toggleTheme() {
-
-	if (toggleAnimationId !== null) {
-		cancelAnimationFrame(toggleAnimationId);
-		CANVAS_VARS.forEach(v => document.documentElement.style.removeProperty(v));
-		toggleAnimationId = null;
-	}
-
-	const root = document.documentElement;
-	const from = Object.fromEntries(CANVAS_VARS.map(v => [v, parse_color(getComputedStyle(root).getPropertyValue(v).trim())]));
-
 	isDark = !isDark;
 	manualOverride = true;
 	applyTheme();
-
-	const styleAfter = getComputedStyle(root);
-	const to = Object.fromEntries(CANVAS_VARS.map(v => [v, parse_color(styleAfter.getPropertyValue(v).trim())]));
-
-	const duration = parseFloat(styleAfter.getPropertyValue("--background-transition-duration")) * 1000 || 300;
-
-	// Start from the mirror of where we were (e.g. interrupted at t=0.25 → start new at t=0.75)
-	const startT = 1 - currentT;
-	const startTime = performance.now() - startT * duration;
-
-	function redrawLoop(now) {
-		currentT = ease_in_out(Math.min((now - startTime) / duration, 1));
-		CANVAS_VARS.forEach(v => root.style.setProperty(v, lerp_color(from[v], to[v], currentT)));
-		
-		if (currentT < 1) {
-			toggleAnimationId = requestAnimationFrame(redrawLoop);
-		} else {
-			CANVAS_VARS.forEach(v => root.style.removeProperty(v));
-			toggleAnimationId = null;
-			currentT = 1;
-			
-		}
-	}
-
-	toggleAnimationId = requestAnimationFrame(redrawLoop);
 }
 
 mq.addEventListener('change', e => {
@@ -849,6 +850,9 @@ document.addEventListener("keydown", (e) => {
 	if (e.key === "Shift") {
 		update_selection_rect(mouse_location, mouse_location);
 	}
+
+	if (e.key === "ArrowUp") {current_polygon++;}
+	if (e.key === "ArrowDown") {current_polygon--;}
 });
 
 document.addEventListener("keyup", (e) => {
