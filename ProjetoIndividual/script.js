@@ -897,6 +897,8 @@ let is_dragging_canvas = false;
 
 document.addEventListener("mousedown", (e) => {
 
+	if (is_overlay_open()) return;
+
 	const bounds = canvas.getBoundingClientRect();
 	const cx = e.clientX - bounds.left;
 	const cy = e.clientY - bounds.top;
@@ -933,6 +935,8 @@ document.addEventListener("mousedown", (e) => {
 
 document.addEventListener("mouseup", (e) => {
 	
+	if (is_overlay_open()) return;
+
 	is_dragging_canvas = false;
 	
 	if (dragging) {
@@ -961,6 +965,8 @@ document.addEventListener("mouseup", (e) => {
 });
 
 document.addEventListener("mousemove", (e) => {
+
+	if (is_overlay_open()) return;
 
 	const bounds = canvas.getBoundingClientRect();
 	mouse_location.x = e.clientX - bounds.left;
@@ -997,6 +1003,8 @@ document.addEventListener("mousemove", (e) => {
 
 canvas.addEventListener("wheel", (e) => {
 
+	if (is_overlay_open()) { e.preventDefault(); return; }
+
 	e.preventDefault();
 
 	let scale = 1 - e.deltaY * scroll_sensitivity;
@@ -1011,6 +1019,9 @@ let last_shift_press_time = 0;
 let last_shift_press_position = { x: 0, y: 0 };
 
 document.addEventListener("keydown", (e) => {
+
+	if (is_overlay_open()) return;
+
 	if (e.key === "w") {camera_center.y += 0.1;};
 	if (e.key === "s") {camera_center.y -= 0.1;};
 	if (e.key === "a") {camera_center.x -= 0.1;};
@@ -1087,6 +1098,9 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("keyup", (e) => {
+
+	if (is_overlay_open()) return;
+
 	if (e.key === "Shift") {
 		// capture points here before clearing
 		unselect_rect();
@@ -1111,3 +1125,23 @@ function loop() {
 }
 
 requestAnimationFrame(loop);
+
+
+const overlay = document.getElementById("login-overlay");
+
+function is_overlay_open() {
+	return !overlay.classList.contains("hidden");
+}
+
+document.querySelector("#login-button").addEventListener("click", () => {
+	overlay.classList.remove("hidden");
+
+});
+
+document.querySelector(".login-close").addEventListener("click", () => {
+	overlay.classList.add("hidden");
+});
+// Optional: close on backdrop click
+overlay.addEventListener("click", (e) => {
+	if (e.target === overlay) overlay.classList.add("hidden");
+});
