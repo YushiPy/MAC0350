@@ -1135,22 +1135,22 @@ function is_overlay_open() {
 
 document.querySelector("#login-button").addEventListener("click", () => {
 	overlay.classList.remove("hidden");
+	set_auth_mode(false);
+});
 
+document.querySelector("#sign-up-button").addEventListener("click", () => {
+	overlay.classList.remove("hidden");
+	set_auth_mode(true);
 });
 
 function close_overlay() {
-
 	overlay.classList.add("hidden");
-	
-	// sleep for 300ms to allow the closing animation to play before resetting the form
-	setTimeout(() => {
-		set_auth_mode(false);
-	}, 300);
 }
 
 document.querySelector(".login-close").addEventListener("click", () => {
 	close_overlay();
 });
+
 // Optional: close on backdrop click
 overlay.addEventListener("click", (e) => {
 	if (e.target === overlay) close_overlay();
@@ -1168,6 +1168,36 @@ const password_input = document.querySelector(".login-box input[type='password']
 
 let confirm_input = null;
 let password_warning = null;
+
+const login_box = document.querySelector(".login-box");
+
+login_box.addEventListener("keydown", (e) => {
+
+	let index_change = 0;
+	let submit = false;
+
+	if (e.key === "ArrowDown") {
+		index_change = 1;
+	} else if (e.key === "ArrowUp") {
+		index_change = -1;
+	} else if (e.key === "Enter") {
+		index_change = 1; // Move down to the submit button
+		submit = true;
+	} else {
+		return;
+	}
+
+	const inputs = [...document.querySelectorAll(".login-box input")];
+	const i = inputs.indexOf(e.target);
+	const new_index = Math.max(0, Math.min(inputs.length, i + index_change));
+
+	if (new_index === inputs.length && submit) {
+		document.querySelector(".login-submit").click();
+	} else {
+		inputs[new_index].focus();
+	}
+});
+
 
 function set_auth_mode(signup) {
 
@@ -1215,9 +1245,14 @@ function set_auth_mode(signup) {
 			password_warning = null;
 		}
 	}
+
+	// Focus username input
+	document.querySelector(".login-box input[type='text']").focus();
 }
 
 auth_switch_btn.addEventListener("click", () => set_auth_mode(!is_signup));
+
+let current_user = null;
 
 document.querySelector(".login-submit").addEventListener("click", async () => {
 	
@@ -1256,10 +1291,68 @@ document.querySelector(".login-submit").addEventListener("click", async () => {
 		}
 
 		overlay.classList.add("hidden");
-		alert(is_signup ? "Account created! You can now log in." : `Welcome, ${username}!`);
+
+		if (is_signup) {
+			alert("Account created! You are now logged in.");
+		} else {
+			alert(`Welcome, ${username}!`);
+		}
+
+		current_user = username;
+		onLogin(username);
 
 	} catch (err) {
 		alert("Could not reach the server.");
 	}
+
+	// Clear fields
+	inputs[0].value = "";
+	inputs[1].value = "";
+	
+	if (is_signup) {
+		inputs[2].value = "";
+	}
 });
 
+// On page load — not logged in
+const userButton = document.getElementById('user-button');
+userButton.style.display = 'none';
+
+// Call this when user logs in
+function onLogin(username) {
+	document.getElementById('username-text').textContent = username;
+	document.getElementById('user-button').style.display = '';
+	document.getElementById('login-button').style.display = 'none';
+	document.getElementById('sign-up-button').style.display = 'none';
+}
+
+// Call this when user logs out
+function onLogout() {
+	document.getElementById('user-button').style.display = 'none';
+	document.getElementById('login-button').style.display = '';
+	document.getElementById('sign-up-button').style.display = '';
+}
+
+// Create dropdown
+const dropdown = document.createElement('div');
+dropdown.id = 'user-dropdown';
+dropdown.innerHTML = `<button id="logout-button">Log out</button>`;
+dropdown.style.display = 'none';
+userButton.parentElement.appendChild(dropdown);
+
+// Toggle on click
+userButton.addEventListener('click', (e) => {
+	e.stopPropagation();
+	const open = dropdown.style.display === 'block';
+	dropdown.style.display = open ? 'none' : 'block';
+});
+
+// Close when clicking outside
+document.addEventListener('click', () => {
+	dropdown.style.display = 'none';
+});
+
+document.getElementById('logout-button').addEventListener('click', () => {
+	dropdown.style.display = 'none';
+	onLogout();
+});

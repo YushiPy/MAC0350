@@ -132,7 +132,7 @@ input {
 	height: var(--header-height);
 }
 
-.header-left, .header-center, .header-right {
+.header-left, .header-center, #header-right {
 	display: flex;
 	align-items: center;
 }
@@ -163,8 +163,9 @@ input {
 	width: auto;
 }
 
-.header-right {
+#header-right {
 	margin-right: 3px;
+	position: relative;
 }
 
 #folder-button {
@@ -216,7 +217,75 @@ input {
 	padding-right: 15px;
 	height: 34px;
 	margin-left: 12px;
+
+	background-color: transparent;
+	color: var(--header-text-color);
+	border: 1px solid var(--header-text-color);
+
+	transition: outline 0.00s ease;
 }
+
+#login-button:hover {
+	color: var(--header-text-color-hover);
+	outline: 1px solid var(--header-text-color-hover);
+}
+
+#sign-up-button {
+	padding-left: 15px;
+	padding-right: 15px;
+	height: 34px;
+	margin-left: 12px;
+	margin-right: 10px;
+}
+
+#user-button {
+	padding-left: 15px;
+	padding-right: 15px;
+	height: 34px;
+	margin-left: 12px;
+	margin-right: 10px;
+
+	background-color: transparent;
+}
+
+#user-button:hover {
+	background-color: #ffffff22;
+}
+
+.down-arrow-svg {
+	width: 20px;
+	height: 20px;
+	stroke: var(--header-text-color);
+	fill: var(--header-text-color);
+	margin-left: 4px;
+}
+
+#user-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	background: #1e1e1e; /* match your header color */
+	border: 1px solid #444;
+	border-radius: 6px;
+	overflow: hidden;
+	z-index: 1000;
+}
+
+#user-dropdown button {
+	display: block;
+	width: 100%;
+	padding: 10px 20px;
+	background: none;
+	border: none;
+	color: white;
+	cursor: pointer;
+	text-align: left;
+}
+
+#user-dropdown button:hover {
+	background: #333;
+}
+
 
 .main-content {
 	flex: 1;
