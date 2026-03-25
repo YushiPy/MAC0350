@@ -89,7 +89,6 @@ const show_vertex_line_svg_on = `
 </svg>
 `
 
-
 let show_vertex_line; // Whether to show the dashed line from the current vertex to the mouse position
 const vertex_line_toggle_button = document.querySelector("#vertex-line-toggle");
 
@@ -145,6 +144,7 @@ document.querySelector("#triangle-button").addEventListener("click", (e) => {
 	polygons.push([{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0.5, y: 1 }]);
 });
 
+const all_tool_buttons = document.querySelectorAll(".tool-button");
 
 function copy_point(point) {
 	return { x: point.x, y: point.y };
@@ -1072,6 +1072,17 @@ document.addEventListener("keydown", (e) => {
 
 	if (e.key === "h") {
 		set_vertex_line(!show_vertex_line);
+	}
+
+	// Check if key is a number:
+	if (e.key >= "0" && e.key <= "9") {
+		
+		const index = e.key == "0" ? 9 : parseInt(e.key) - 1;
+		const button = all_tool_buttons[index];
+		
+		if (button) {
+			button.click();
+		}
 	}
 });
 
