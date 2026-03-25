@@ -58,6 +58,94 @@ let current_polygon = 0;
 // Index of the vertex being edited in the current polygon
 let current_polygon_vertex = 0; 
 
+const show_vertex_line_svg_off = `
+<svg class="tool-icon" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path
+	fill-rule="evenodd"
+	clip-rule="evenodd"
+	d="M14.7649 6.07595C14.9991 6.22231 15.0703 6.53078 14.9239 6.76495C14.4849 7.46742 13.9632 8.10644 13.3702 8.66304L14.5712 9.86405C14.7664 10.0593 14.7664 10.3759 14.5712 10.5712C14.3759 10.7664 14.0593 10.7664 13.8641 10.5712L12.6011 9.30816C11.8049 9.90282 10.9089 10.3621 9.93374 10.651L10.383 12.3276C10.4544 12.5944 10.2961 12.8685 10.0294 12.94C9.76266 13.0115 9.4885 12.8532 9.41703 12.5864L8.95916 10.8775C8.48742 10.958 8.00035 10.9999 7.5 10.9999C6.99964 10.9999 6.51257 10.958 6.04082 10.8775L5.58299 12.5864C5.51153 12.8532 5.23737 13.0115 4.97063 12.94C4.7039 12.8685 4.5456 12.5944 4.61706 12.3277L5.06624 10.651C4.09111 10.3621 3.19503 9.90281 2.3989 9.30814L1.1359 10.5711C0.940638 10.7664 0.624058 10.7664 0.428797 10.5711C0.233537 10.3759 0.233537 10.0593 0.428797 9.86404L1.62982 8.66302C1.03682 8.10643 0.515113 7.46742 0.0760677 6.76495C-0.0702867 6.53078 0.000898544 6.22231 0.235064 6.07595C0.46923 5.9296 0.777703 6.00078 0.924057 6.23495C1.40354 7.00212 1.989 7.68056 2.66233 8.2427C2.67315 8.25096 2.6837 8.25971 2.69397 8.26897C4.00897 9.35527 5.65536 9.9999 7.5 9.9999C10.3078 9.9999 12.6563 8.50629 14.0759 6.23495C14.2223 6.00078 14.5308 5.9296 14.7649 6.07595Z"
+	fill="#000000"
+/>
+</svg>
+`
+
+const show_vertex_line_svg_on = `
+<svg class="tool-icon" fill="none" xmlns="http://www.w3.org/2000/svg" 
+	viewBox="0 0 15 15"
+	xml:space="preserve" style="stroke-width: 10px;">
+<g>
+	<g transform="scale(0.0893)">  <!-- 15/168 ≈ 0.0893 -->
+		<circle cx="84.048" cy="84.044" r="20.699"/>
+		<path d="M167.055,81.422c-1.516-1.604-37.579-39.41-83.017-39.41c-45.433,0-81.491,37.806-83.003,39.41
+			c-1.379,1.473-1.379,3.77,0,5.236c1.518,1.604,37.577,39.427,83.003,39.427c45.438,0,81.512-37.823,83.017-39.427
+			C168.444,85.192,168.444,82.883,167.055,81.422z M84.048,116.043c-17.639,0-31.989-14.353-31.989-32.006
+			c0-17.639,14.35-32,31.989-32c17.638,0,32.008,14.356,32.008,32C116.052,101.68,101.686,116.043,84.048,116.043z M58.682,53.829
+			c-8.645,7.275-14.269,18.044-14.269,30.208c0,12.159,5.624,22.929,14.269,30.217c-23.92-7.693-42.704-23.88-49.418-30.217
+			C15.979,77.707,34.767,61.518,58.682,53.829z M109.426,114.242c8.639-7.28,14.27-18.052,14.27-30.205
+			c0-12.153-5.626-22.917-14.277-30.197c23.919,7.693,42.689,23.86,49.407,30.197C152.107,90.368,133.337,106.538,109.426,114.242z"
+			/>
+	</g>
+</g>
+</svg>
+`
+
+
+let show_vertex_line; // Whether to show the dashed line from the current vertex to the mouse position
+const vertex_line_toggle_button = document.querySelector("#vertex-line-toggle");
+
+function set_vertex_line(value) {
+	show_vertex_line = value;
+	vertex_line_toggle_button.innerHTML = show_vertex_line ? show_vertex_line_svg_on : show_vertex_line_svg_off;
+	vertex_line_toggle_button.classList.toggle("active", show_vertex_line);
+}
+
+vertex_line_toggle_button.addEventListener("click", (e) => {
+	set_vertex_line(!show_vertex_line);
+});
+
+set_vertex_line(false);
+
+// Whether to snap the dragged points to the grid or not, toggled by holding Shift key
+let snapping = false; 
+
+function snap_point(point) {
+	
+	if (!snapping) {
+		return point;
+	}
+	
+	const sub_grid_spacing = get_subgrid_spacing();
+
+	return {
+		x: Math.round(point.x / sub_grid_spacing) * sub_grid_spacing,
+		y: Math.round(point.y / sub_grid_spacing) * sub_grid_spacing
+	};
+}
+
+function move_point(point, movement) {
+	
+	const snapped_point = snap_point({
+		x: point.x + movement.x,
+		y: point.y + movement.y
+	});
+
+	point.x = snapped_point.x;
+	point.y = snapped_point.y;
+}
+
+const snapping_toggle_button = document.querySelector("#snapping-toggle");
+
+snapping_toggle_button.addEventListener("click", (e) => {
+	snapping = !snapping;
+	snapping_toggle_button.classList.toggle("active");
+});
+
+
+document.querySelector("#triangle-button").addEventListener("click", (e) => {
+	polygons.push([{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0.5, y: 1 }]);
+});
+
+
 function copy_point(point) {
 	return { x: point.x, y: point.y };
 }
@@ -275,6 +363,31 @@ function float_to_string(integer_part, exponent) {
 	return integer_str + (decimal_str ? "." + decimal_str : "");
 }
 
+function get_subgrid_spacing() {
+	
+	const decision_value = min_grid_spacing / units_to_pixels;
+
+	let exponent = Math.ceil(Math.log10(decision_value)) | 0;
+	let multiplier = 1;
+	let grid_scale = Math.pow(10, exponent);
+
+	let sub_grid_count = 4;
+
+	if (grid_scale / 5 > decision_value) {
+		sub_grid_count = 3;
+		exponent--;
+		multiplier = 2;
+	} else if (grid_scale / 2 > decision_value) {
+		exponent--;
+		multiplier = 5;
+	}
+
+	const grid_spacing = Math.pow(10, exponent) * multiplier
+	const sub_grid_spacing = grid_spacing / (sub_grid_count + 1);
+
+	return sub_grid_spacing;
+}
+
 function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 
 	const decision_value = minimum_grid_spacing / units_to_pixels;
@@ -349,17 +462,33 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 		text_fixed_x += 2;
 	}
 
-	for (let i = 0; i <= grid_count_x; i++) {
+	// Draw vertical grid lines and sub grid lines
+	for (let x_world = integer_part_start_x * Math.pow(10, exponent); x_world < canvas_right; x_world += grid_spacing) {
 		
-		const integer_part = integer_part_start_x + i * multiplier;
-		const x_world = integer_part * Math.pow(10, exponent);
-
 		draw_line(x_world, canvas_bottom, x_world, canvas_top, grid_color);
 
 		for (let j = 0; j < sub_grid_count; j++) {
 			const sub_grid_x = x_world + grid_spacing * (j + 1) / (sub_grid_count + 1);
 			draw_line(sub_grid_x, canvas_bottom, sub_grid_x, canvas_top, sub_grid_color);
 		}
+	}
+
+	// Draw horizontal grid lines and sub grid lines
+	for (let y_world = integer_part_start_y * Math.pow(10, exponent); y_world < canvas_top; y_world += grid_spacing) {
+
+		draw_line(canvas_left, y_world, canvas_right, y_world, grid_color);
+
+		for (let j = 0; j < sub_grid_count; j++) {
+			const sub_grid_y = y_world + grid_spacing * (j + 1) / (sub_grid_count + 1);
+			draw_line(canvas_left, sub_grid_y, canvas_right, sub_grid_y, sub_grid_color);
+		}
+	}
+
+	// Write numbers text on x-axis
+	for (let i = 0; i <= grid_count_x; i++) {
+		
+		const integer_part = integer_part_start_x + i * multiplier;
+		const x_world = integer_part * Math.pow(10, exponent);
 
 		// Write number next to the grid line
 		if (Math.abs(x_world) > 1e-12) {
@@ -375,17 +504,11 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 		}
 	}
 
+	// Write numbers text on y-axis
 	for (let i = 0; i <= grid_count_y; i++) {
 		
 		const integer_part = integer_part_start_y + i * multiplier;
 		const y_world = integer_part * Math.pow(10, exponent);
-
-		draw_line(canvas_left, y_world, canvas_right, y_world, grid_color);
-
-		for (let j = 0; j < sub_grid_count; j++) {
-			const sub_grid_y = y_world + grid_spacing * (j + 1) / (sub_grid_count + 1);
-			draw_line(canvas_left, sub_grid_y, canvas_right, sub_grid_y, sub_grid_color);
-		}
 
 		// Write number next to the grid line
 		if (Math.abs(y_world) > 1e-12) {
@@ -410,7 +533,6 @@ function draw_grid(minimum_grid_spacing, grid_color, sub_grid_color) {
 	}
 
 	// Draw 0 on bottom left corner:
-
 	let zero_position = world_to_canvas(0, 0);
 
 	let zero_x = zero_position.x + x_offset;
@@ -546,7 +668,7 @@ function draw() {
 		}
 	}
 
-	if (polygons.length > 0) {
+	if (show_vertex_line && polygons.length > 0) {
 
 		const polygon = polygons[current_polygon % polygons.length];
 		const v1 = polygon[((current_polygon_vertex - 1) % polygon.length + polygon.length) % polygon.length];
@@ -637,7 +759,6 @@ mq.addEventListener('change', e => {
 
 applyTheme();
 
-
 // dragging = [reference_point, reference_current, points_begin_dragged],
 // The first element is the reference point that is used to determine the offset of the drag,
 // and the second element is an array of points that are being dragged 
@@ -701,12 +822,12 @@ function drag_objects(dragging, mouse_position) {
 		y: world.y - reference_point.y
 	}
 
-	reference_point.x += relative_movement.x;
-	reference_point.y += relative_movement.y;
+	move_point(reference_point, relative_movement);
 
 	for (let point of points_being_dragged) {
-		point.x += relative_movement.x;
-		point.y += relative_movement.y;
+		if (point !== reference_point) {
+			move_point(point, relative_movement);
+		}
 	}
 }
 
@@ -772,6 +893,7 @@ document.addEventListener("mouseleave", () => {
 
 let last_click_time = 0;
 let last_click_position = { x: 0, y: 0 };
+let is_dragging_canvas = false;
 
 document.addEventListener("mousedown", (e) => {
 
@@ -802,24 +924,32 @@ document.addEventListener("mousedown", (e) => {
 		}
 	}
 
-	if (!dragging) {
-		mouse_held = true;
+	const is_in_canvas = cx >= 0 && cx <= canvas.offsetWidth && cy >= 0 && cy <= canvas.offsetHeight;
+
+	if (!dragging && is_in_canvas) {
+		is_dragging_canvas = true;
 	}
 });
 
 document.addEventListener("mouseup", (e) => {
 	
-	mouse_held = false;
+	is_dragging_canvas = false;
 	
 	if (dragging) {
 		dragging = null;
 		return;
 	}
 
+	const bounds = canvas.getBoundingClientRect();
+	const cx = e.clientX - bounds.left;
+	const cy = e.clientY - bounds.top;
+
+	const is_in_canvas = cx >= 0 && cx <= canvas.offsetWidth && cy >= 0 && cy <= canvas.offsetHeight;
+
 	const is_recent = performance.now() - last_click_time < 300;
 	const is_close = Math.hypot(mouse_location.x - last_click_position.x, mouse_location.y - last_click_position.y) < HIT_RADIUS;
 
-	if (is_recent && is_close && polygons.length > 0) {
+	if (is_in_canvas && is_recent && is_close && polygons.length > 0) {
 
 		const clamped_mouse = clamp_to_canvas(mouse_location);
 		const world = canvas_to_world(clamped_mouse.x, clamped_mouse.y);
@@ -848,7 +978,6 @@ document.addEventListener("mousemove", (e) => {
 
 	if (dragging) {
 		drag_objects(dragging, mouse_location);
-		
 		return;
 	}
 
@@ -859,10 +988,9 @@ document.addEventListener("mousemove", (e) => {
 	}
 
 
-	if (mouse_held) {
+	if (is_dragging_canvas) {
 		camera_center.x -= e.movementX / units_to_pixels;
 		camera_center.y += e.movementY / units_to_pixels;
-		
 	}	
 });
 
@@ -912,7 +1040,13 @@ document.addEventListener("keydown", (e) => {
 	if (e.key === "Backspace" || e.key === "Delete" || e.key === "x") {
 		if (selected_points_total.size > 0) {
 			// Check if all vertices are in selected_points_total, if so, remove the whole polygon
+			
+			const length_before = polygons.length;
 			polygons = polygons.filter(polygon => !polygon.every(vertex => selected_points_total.has(vertex)));
+
+			if (polygons.length !== length_before) {
+				current_polygon = 0; // reset current polygon index if a polygon was removed
+			}
 
 			for (let point of selected_points_total) {
 				for (let i = 0; i < polygons.length; i++) {
@@ -934,6 +1068,10 @@ document.addEventListener("keydown", (e) => {
 			selected_points_total = new Set();
 			selected_points = [];
 		}
+	}
+
+	if (e.key === "h") {
+		set_vertex_line(!show_vertex_line);
 	}
 });
 

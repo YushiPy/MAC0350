@@ -68,7 +68,7 @@
 	--number-text-color: #E0E0E0;
 	--number-text-light-color: #777777;
 
-	--button-light-color: #2A2A2A;
+	--button-light-color: #F2F4F5;
 	--button-accent-color: rgb(47, 114, 220);
 	--button-accent-color-hover: rgb(36, 87, 168);
 	--button-accent-color-active: rgb(27, 66, 127);
@@ -161,8 +161,72 @@ body {
 	background-color: var(--button-accent-color-active);
 }
 
+.main-content {
+	flex: 1;
+	display: flex;
+	flex-direction: row;
+}
+
+.tool-bar {
+	display: flex;
+	flex-direction: column;
+	padding: 12px;
+	gap: 12px;
+	border-right: 2px solid var(--button-accent-color);
+}
+
+.tool-button {
+
+	background-color: var(--button-accent-color);
+	border: none;
+	padding: 10px;
+	width: 47px;
+	height: 47px;
+	font-size: 14.4px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.15s ease, outline 0.15s ease;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	outline: 2px solid var(--background-color);
+}
+
+.tool-button:hover {
+	background-color: var(--button-accent-color-hover);
+}
+
+.tool-button:active {
+	background-color: var(--button-accent-color-active);
+}
+
+.tool-button.active {
+	outline: 2px solid var(--header-text-color);
+}
+
+.tool-icon {
+	width: 24px;
+	height: 24px;
+}
+
+.tool-icon rect, .tool-icon path {
+	stroke: var(--header-text-color);
+}
+
+.tool-button:hover .tool-icon rect, .tool-button:hover .tool-icon path {
+	stroke: var(--header-text-color);
+}
+
+
+.tool-button:active .tool-icon rect, .tool-button:active .tool-icon path {
+	stroke: var(--header-text-color);
+}
+
 #drawing-canvas {
 	height: calc(100vh - var(--header-height));
-	width: 100%;
+	flex: 1;
+	width: 1px;
 	background-color: var(--background-color);
 }
