@@ -1138,12 +1138,22 @@ document.querySelector("#login-button").addEventListener("click", () => {
 
 });
 
-document.querySelector(".login-close").addEventListener("click", () => {
+function close_overlay() {
+
 	overlay.classList.add("hidden");
+	
+	// sleep for 300ms to allow the closing animation to play before resetting the form
+	setTimeout(() => {
+		set_auth_mode(false);
+	}, 300);
+}
+
+document.querySelector(".login-close").addEventListener("click", () => {
+	close_overlay();
 });
 // Optional: close on backdrop click
 overlay.addEventListener("click", (e) => {
-	if (e.target === overlay) overlay.classList.add("hidden");
+	if (e.target === overlay) close_overlay();
 });
 
 let is_signup = false;
@@ -1157,6 +1167,7 @@ const auth_switch_text = document.querySelector("#auth-switch-text");
 const password_input = document.querySelector(".login-box input[type='password']");
 
 let confirm_input = null;
+let password_warning = null;
 
 function set_auth_mode(signup) {
 
@@ -1172,6 +1183,22 @@ function set_auth_mode(signup) {
 		confirm_input.type = "password";
 		confirm_input.placeholder = "Confirm password";
 		password_input.after(confirm_input);
+
+		password_warning = document.createElement("p");
+		password_warning.textContent = "DO NOT USE A REAL PASSWORD, THIS WEBSITE IS NOT SECURE!";
+		password_warning.style = `
+		color: red;
+		font-size: 16px;
+		font-weight: bold;
+		margin-top: 5px;
+		width: 100%;
+		background-color: var(--header-color);
+		padding: 5px;
+		border-radius: 5px;
+		`
+
+		confirm_input.after(password_warning);
+
 	} else {
 		menu_title.textContent = "Login";
 		login_submit.textContent = "Sign in";
@@ -1182,7 +1209,57 @@ function set_auth_mode(signup) {
 			confirm_input.remove();
 			confirm_input = null;
 		}
+
+		if (password_warning) {
+			password_warning.remove();
+			password_warning = null;
+		}
 	}
 }
 
 auth_switch_btn.addEventListener("click", () => set_auth_mode(!is_signup));
+
+document.querySelector(".login-submit").addEventListener("click", async () => {
+	
+	const inputs = document.querySelectorAll(".login-box input");
+	const username = inputs[0].value;
+	const password = inputs[1].value.trim();
+
+	const endpoint = is_signup ? "/auth/register" : "/auth/login";
+	const body = { username, password };
+
+	if (is_signup) {
+		const confirm_password = inputs[2].value.trim();
+		if (password !== confirm_password) {
+			alert("Passwords do not match.");
+			return;
+		}
+		body.confirm_password = confirm_password;
+	}
+
+	try {
+		const res = await fetch(endpoint, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+
+		const data = await res.json();
+
+		if (!res.ok) {
+			alert(data.detail ?? "An error occurred.");
+			return;
+		}
+
+		if (!is_signup) {
+			localStorage.setItem("token", data.access_token);
+		}
+
+		overlay.classList.add("hidden");
+		alert(is_signup ? "Account created! You can now log in." : `Welcome, ${username}!`);
+
+	} catch (err) {
+		alert("Could not reach the server.");
+	}
+});
+

@@ -293,6 +293,8 @@ input {
 	gap: 1rem;
 	min-width: 280px;
 	position: relative;
+
+	width: 20vw;
 }
 
 .login-close {
