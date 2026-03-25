@@ -1145,3 +1145,44 @@ document.querySelector(".login-close").addEventListener("click", () => {
 overlay.addEventListener("click", (e) => {
 	if (e.target === overlay) overlay.classList.add("hidden");
 });
+
+let is_signup = false;
+
+const auth_switch_btn = document.querySelector("#auth-switch-btn");
+const menu_title = document.querySelector(".menu-title");
+const login_submit = document.querySelector(".login-submit");
+const auth_switch_text = document.querySelector("#auth-switch-text");
+
+// We'll insert the confirm password input dynamically
+const password_input = document.querySelector(".login-box input[type='password']");
+
+let confirm_input = null;
+
+function set_auth_mode(signup) {
+
+	is_signup = signup;
+
+	if (signup) {
+		menu_title.textContent = "Sign Up";
+		login_submit.textContent = "Create account";
+		auth_switch_btn.textContent = "Back to login";
+		auth_switch_text.textContent = "Already have an account? ";
+
+		confirm_input = document.createElement("input");
+		confirm_input.type = "password";
+		confirm_input.placeholder = "Confirm password";
+		password_input.after(confirm_input);
+	} else {
+		menu_title.textContent = "Login";
+		login_submit.textContent = "Sign in";
+		auth_switch_btn.textContent = "Create an account";
+		auth_switch_text.textContent = "First time? ";
+
+		if (confirm_input) {
+			confirm_input.remove();
+			confirm_input = null;
+		}
+	}
+}
+
+auth_switch_btn.addEventListener("click", () => set_auth_mode(!is_signup));
