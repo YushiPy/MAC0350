@@ -130,6 +130,9 @@ input {
 	color: var(--header-text-color);
 	text-align: center;
 	height: var(--header-height);
+
+	width: 100%;
+	min-width: 400px;
 }
 
 .header-left, .header-center, #header-right {
@@ -421,4 +424,29 @@ input {
 .auth-switch-link:active {
 	background: none;
 	color: var(--button-accent-color-active);
+}
+
+.saved-drawings-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 1;
+	transition: opacity 0.3s ease;
+	z-index: 1000;
+}
+
+.saved-drawings-overlay.hidden {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.saved-drawings-box {
+	background-color: var(--header-color);
+	width: 70%;
+	height: 70%;
+	padding: 2vw;
+	border-radius: 1vw;
 }

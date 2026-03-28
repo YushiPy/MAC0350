@@ -1,13 +1,19 @@
 
+import base64
+import re
+
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import hashlib, secrets
+import os
 
 app = FastAPI()
 
 # Simple in-memory user store — swap for a real DB later
 users: dict[str, str] = {}
+
+DRAWINGS_DIR = "drawings"
 
 class AuthRequest(BaseModel):
 	username: str
@@ -34,6 +40,42 @@ def login(req: AuthRequest):
 	# Replace this with a real JWT in production
 	token = secrets.token_hex(32)
 	return {"access_token": token}
+
+class SaveDrawingRequest(BaseModel):
+	username: str
+	image_data: str  # Base64-encoded image data
+
+@app.post("/drawings/save")
+def save_image(req: SaveDrawingRequest):
+	
+	if req.username not in users:
+		raise HTTPException(status_code=401, detail="Unauthorized.")
+
+	if not os.path.exists(DRAWINGS_DIR):
+		os.makedirs(DRAWINGS_DIR)
+
+	user_folder = os.path.join(DRAWINGS_DIR, req.username)
+
+	if not os.path.exists(user_folder):
+		os.makedirs(user_folder)
+
+	image_data = req.image_data
+	data = image_data.split(",")[1] if "," in image_data else image_data
+	print(image_data)
+	drawings = [f for f in os.listdir(user_folder) if f.startswith("drawing_") and f.endswith(".png")]
+
+	next_index = 0
+
+	for file in drawings:
+		regex_match = re.match(r"drawing_(\d+)\.png", file)
+		if regex_match:
+			index = int(regex_match.group(1))
+			next_index = max(next_index, index + 1)
+
+	with open(os.path.join(user_folder, f"drawing_{next_index}.png"), "wb") as f:
+		f.write(base64.b64decode(data))
+
+	return {"message": "Drawing saved."}
 
 # Serve your static files (html, css, js)
 app.mount("/", StaticFiles(directory=".", html=True), name="static")

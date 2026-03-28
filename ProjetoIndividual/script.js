@@ -608,12 +608,16 @@ function draw_solution() {
 
 function draw() {
 
-	ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
-
+	// Fill with background color from css
 	const style = getComputedStyle(document.documentElement);
+	const background_color = style.getPropertyValue("--background-color").trim();
 	const axisColor = style.getPropertyValue("--axis-color").trim();
 	const gridColor = style.getPropertyValue("--grid-color").trim();
 	const subGridColor = style.getPropertyValue("--sub-grid-color").trim();
+	
+	ctx.fillStyle = background_color;
+	//ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+	ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
 	draw_grid(min_grid_spacing, gridColor, subGridColor);
 
@@ -898,6 +902,7 @@ let is_dragging_canvas = false;
 document.addEventListener("mousedown", (e) => {
 
 	if (is_overlay_open()) return;
+	if (e.target.closest('#user-dropdown, #user-button')) return; // add this
 
 	const bounds = canvas.getBoundingClientRect();
 	const cx = e.clientX - bounds.left;
@@ -1126,12 +1131,30 @@ function loop() {
 
 requestAnimationFrame(loop);
 
+const logo = document.querySelector(".logo");
+let logo_width = parseFloat(getComputedStyle(logo).width);
+const header_center = document.querySelector(".header-center");
+
+function update_logo_text() {
+
+	if (logo.style.display !== "none") {
+		logo_width = parseFloat(getComputedStyle(logo).width);
+	}
+
+	if (header_center.offsetWidth < logo_width + 20) {
+		// hide logo
+		logo.style.display = "none";
+	} else {
+		// show logo
+		logo.style.display = "";
+	}
+}
+
+window.addEventListener("resize", update_logo_text);
+update_logo_text();
+
 
 const overlay = document.getElementById("login-overlay");
-
-function is_overlay_open() {
-	return !overlay.classList.contains("hidden");
-}
 
 document.querySelector("#login-button").addEventListener("click", () => {
 	overlay.classList.remove("hidden");
@@ -1171,30 +1194,61 @@ let password_warning = null;
 
 const login_box = document.querySelector(".login-box");
 
-login_box.addEventListener("keydown", (e) => {
+const MIN_USERNAME_LENGTH = 3;
+const MAX_USERNAME_LENGTH = 20;
 
-	let index_change = 0;
-	let submit = false;
+function validate_username(username) {
+	// Example validation: username must be 3-20 characters and contain only letters, numbers, underscores, or hyphens
 
-	if (e.key === "ArrowDown") {
-		index_change = 1;
-	} else if (e.key === "ArrowUp") {
-		index_change = -1;
-	} else if (e.key === "Enter") {
-		index_change = 1; // Move down to the submit button
-		submit = true;
-	} else {
-		return;
+	if (username.length < MIN_USERNAME_LENGTH) return `Username must be at least ${MIN_USERNAME_LENGTH} characters long.`;
+	if (username.length > MAX_USERNAME_LENGTH) return `Username must be at most ${MAX_USERNAME_LENGTH} characters long.`;
+
+	if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+		return "Username can only contain letters, numbers, underscores, and hyphens.";
 	}
 
-	const inputs = [...document.querySelectorAll(".login-box input")];
-	const i = inputs.indexOf(e.target);
-	const new_index = Math.max(0, Math.min(inputs.length, i + index_change));
+	return null; // No error
+}
 
-	if (new_index === inputs.length && submit) {
-		document.querySelector(".login-submit").click();
-	} else {
-		inputs[new_index].focus();
+login_box.addEventListener("keydown", (e) => {
+
+	const inputs = [...document.querySelectorAll(".login-box input")];
+	
+	function move_focus() {
+		
+		let submit = false;
+		let index_change = 0;
+
+		if (e.key === "ArrowDown") {
+			index_change = 1;
+		} else if (e.key === "ArrowUp") {
+			index_change = -1;
+		} else if (e.key === "Enter") {
+			index_change = 1; // Move down to the submit button
+			submit = true;
+		}
+
+		const i = inputs.indexOf(e.target);
+		const new_index = Math.max(0, Math.min(inputs.length, i + index_change));
+	
+		if (new_index === inputs.length && submit) {
+			document.querySelector(".login-submit").click();
+		} else {
+			inputs[new_index].focus();
+		}
+	}
+	
+	move_focus();
+
+	if (e.target === inputs[0]) { // If we're on the username input, validate the username on each key press
+		const validation_error = validate_username(e.target.value);
+
+		if (validation_error) {
+			e.target.setCustomValidity(validation_error);
+			e.target.reportValidity();
+		} else {
+			e.target.setCustomValidity("");
+		}
 	}
 });
 
@@ -1293,9 +1347,9 @@ document.querySelector(".login-submit").addEventListener("click", async () => {
 		overlay.classList.add("hidden");
 
 		if (is_signup) {
-			alert("Account created! You are now logged in.");
+			//alert("Account created! You are now logged in.");
 		} else {
-			alert(`Welcome, ${username}!`);
+			//alert(`Welcome, ${username}!`);
 		}
 
 		current_user = username;
@@ -1352,7 +1406,56 @@ document.addEventListener('click', () => {
 	dropdown.style.display = 'none';
 });
 
-document.getElementById('logout-button').addEventListener('click', () => {
+document.getElementById('logout-button').addEventListener('click', (e) => {
+	e.stopPropagation();
 	dropdown.style.display = 'none';
 	onLogout();
 });
+
+dropdown.addEventListener('mousedown', (e) => e.stopPropagation());
+
+
+const saved_drawings_overlay = document.getElementById("saved-drawings-overlay");
+
+function is_overlay_open() {
+
+	const is_login_overlay_open = !overlay.classList.contains("hidden");
+	const is_saved_drawings_overlay_open = !saved_drawings_overlay.classList.contains("hidden");
+
+	return is_login_overlay_open || is_saved_drawings_overlay_open;
+}
+
+document.querySelector("#folder-button").addEventListener("click", () => {
+	saved_drawings_overlay.classList.remove("hidden");
+});
+
+document.querySelector(".saved-drawings-close").addEventListener("click", () => {
+	saved_drawings_overlay.classList.add("hidden");
+});
+
+saved_drawings_overlay.addEventListener("click", (e) => {
+	if (e.target === saved_drawings_overlay) {
+		saved_drawings_overlay.classList.add("hidden");
+	}
+});
+
+document.getElementById('save-button').addEventListener('click', () => {
+	save_canvas_as_image();
+});
+
+async function save_canvas_as_image() {
+
+	const dataURL = canvas.toDataURL('image/png');
+
+	const res = await fetch('/drawings/save', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ username: current_user, image_data: dataURL })
+	});
+
+	if (res.ok) {
+		console.log('Drawing saved.');
+	} else {
+		console.error('Error saving drawing.');
+	}
+}
