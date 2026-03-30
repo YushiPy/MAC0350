@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<title>Aula 5</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+	<link href="/static/styles.css" rel="stylesheet">
+	<script src="/static/script.js" defer></script>
+
+	<style>
+
+		.bio-update-section {
+			display: flex;
+			flex-direction: column;
+			width: fit-content;
+		}
+
+		.bio-input {
+			padding: 8px;
+			margin-bottom: 8px;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+
+	</style>
+
+</head>
+<body>
+
+	{% if user %}
+		<h1>Welcome, {{ user.username }}!</h1>
+
+		{% if user.bio %}
+			<p>Your bio: {{ user.bio }}</p>
+		{% else %}
+			<p>You don't have a bio yet.</p>
+		{% endif %}
+
+		<div class="smart-form bio-update-section">
+			<input class="bio-input" type="text" id="new-bio-input" placeholder="Enter your new bio">
+			<button id="update-bio-button" onclick="updateBio()">Update Bio</button>
+		</div>
+
+	{% else %}
+		Please log in to see your home page.
+		See: <a href="/login">Login</a>
+	{% endif %}
+
+</body>
+<script>
+
+	function updateBio() {
+
+		const newBioInput = document.getElementById("new-bio-input");
+		const newBio = newBioInput.value.trim();
+
+		if (newBio === "") {
+			return;
+		}
+
+		console.log("Updating bio to:", newBio);
+
+		fetch("/home/update_bio", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ new_bio: newBio })
+		})
+		.then(response => response.json())
+		.then(data => {
+			location.reload();
+		})
+		.catch(error => {
+			console.error("Error updating bio:", error);
+			alert("An error occurred while updating your bio. Please try again.");
+		});
+	}
+
+</script>
+</html>

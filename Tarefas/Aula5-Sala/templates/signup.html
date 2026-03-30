@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<title>Aula 5</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+	<link href="/static/styles.css" rel="stylesheet">
+	<script src="/static/script.js" defer></script>
+
+	<style>
+
+		.form-container {
+			display: flex;
+			flex-direction: column;
+
+			width: 300px;
+		}
+
+	</style>
+
+</head>
+<body>
+
+	<h1>Sign Up</h1>
+
+	<div class="form-container">
+
+		<div class="smart-form">
+
+			<p>Username:</p> 
+			<input id="username-field" type="text" placeholder="Username">
+			<p>Password:</p> 
+			<input id="password-field" type="password" placeholder="Password">
+			<p>Confirm Password:</p>
+			<input id="confirm-password-field" type="password" placeholder="Confirm Password">
+	
+			<button onclick="handleSignUp()">
+				Sign Up
+			</button>
+
+		</div>
+
+		<a href="/login">Already have an account?</a>
+	</div>
+
+
+</body>
+<script>
+
+	function handleSignUp() {
+	
+		const username = document.getElementById("username-field").value;
+		const password = document.getElementById("password-field").value;
+		const confirmPassword = document.getElementById("confirm-password-field").value;
+
+		if (password !== confirmPassword) {
+			alert("Passwords do not match!");
+			return;
+		}
+
+		fetch("/users", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ username, password })
+		})
+		.then(response => {
+			if (response.ok) {
+				alert("Sign up successful! You can now log in.");
+				window.location.href = "/login";
+			} else {
+				response.json().then(data => {
+					alert("Error: " + data.detail);
+				});
+			}
+		})
+		.catch(error => {
+			console.error("Error during sign up:", error);
+			alert("An error occurred during sign up. Please try again later.");
+		});
+	
+	}
+
+</script>
+</html>

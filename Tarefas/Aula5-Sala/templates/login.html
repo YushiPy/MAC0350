@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<title>Aula 5</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+	<link href="/static/styles.css" rel="stylesheet">
+	<script src="/static/script.js" defer></script>
+
+	<style>
+
+		.form-container {
+			display: flex;
+			flex-direction: column;
+
+			width: 300px;
+		}
+
+	</style>
+
+</head>
+<body>
+
+	<h1>Login</h1>
+
+	<div class="form-container">
+
+		<div class="smart-form">
+
+			<p>Username:</p> 
+			<input id="username-field" type="text" placeholder="Username">
+			<p>Password:</p> 
+			<input id="password-field" type="password" placeholder="Password">
+	
+			<button onclick="handleLogin()">
+				Login
+			</button>
+
+		</div>
+
+		<a href="/">First time?</a>
+	</div>
+
+</body>
+<script>
+
+	function handleLogin() {
+
+		const username = document.getElementById("username-field").value;
+		const password = document.getElementById("password-field").value;
+
+		fetch("/login", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({ username, password })
+		}).then(response => {
+			if (response.ok) {
+				window.location.href = "/home";
+			} else {
+				alert("Invalid username or password");
+			}
+		})
+	}
+
+</script>
+</html>
