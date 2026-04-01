@@ -1,0 +1,26 @@
+
+<form hx-post="/novoAluno"
+	hx-target="#mensagem"
+	hx-swap="beforeend">
+	<input type="text" name="nome" placeholder="Nome do Aluno" required>
+	<button type="submit">Salvar</button>
+</form>
+
+<form 
+	hx-delete="/deletaAluno"
+	hx-target="#mensagem"
+	hx-swap="beforeend">
+	<input type="number" name="id" placeholder="ID do aluno" required>
+	<button type="submit">Deletar aluno</button>
+</form>
+
+<form hx-put="/atualizaAluno"
+	hx-target="#mensagem"
+	hx-swap="beforeend">
+	<input type="number" name="id" placeholder="ID do aluno" required>
+	<input type="text" name="novoNome" placeholder="Novo nome do aluno" required>
+	<button type="submit">Atualizar aluno</button>
+</form>
+
+<br>
+<div id="mensagem"></div>

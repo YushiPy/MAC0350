@@ -1,0 +1,102 @@
+
+:root {
+	--font-size: 18px;
+	--text-color: #e1e1e1;
+	--text-accent-color: #007BFF;
+	--background-color: #333333;
+	--border-color: #c3c3c3;
+}
+
+* {
+
+	all: revert;
+
+	font-family: 'Roboto', sans-serif;
+	font-size: var(--font-size);
+
+	color: var(--text-color);
+	border: none;
+
+	transition: background-color 0.3s ease, color 0.15s ease, border-color 0.3s ease;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	background-color: var(--background-color);
+	align-items: start;
+}
+
+h1 {
+	border-bottom: 2px solid var(--text-accent-color);
+}
+
+input {
+	border-radius: 5px;
+	cursor: pointer;
+	border: 2px solid var(--border-color);
+
+	background-color: var(--background-color);
+}
+
+button {
+
+	--bg: var(--text-accent-color);
+
+	background-color: var(--bg);
+	color: white;
+	padding: 10px 20px;
+	cursor: pointer;
+	margin-top: 10px;
+	
+	border-radius: 5px;
+}
+
+button:hover {
+	background-color: color-mix(in srgb, var(--bg), black 15%);
+}
+
+button:active {
+	background-color: color-mix(in srgb, var(--bg), black 35%);
+}
+
+a {
+	text-decoration: underline;
+}
+
+a:hover {
+	color: color-mix(in srgb, var(--text-accent-color), black 15%);
+}
+
+a:active {
+	color: color-mix(in srgb, var(--text-accent-color), black 35%);
+}
+
+.btn {
+	--bg: #28a745;
+	background-color: var(--bg);
+	color: var(--text-color);
+	padding: 10px 20px;
+	cursor: pointer;
+	margin-top: 10px;
+	border-radius: 5px;
+	border: 3px solid var(--bg);
+}
+
+.btn:hover {
+	background-color: color-mix(in srgb, var(--bg), black 15%);
+	border-color: color-mix(in srgb, var(--bg), black 15%);
+}
+
+.btn:active {
+	background-color: color-mix(in srgb, var(--bg), black 35%);
+	border-color: color-mix(in srgb, var(--bg), black 35%);
+}
+
+.smart-form {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
