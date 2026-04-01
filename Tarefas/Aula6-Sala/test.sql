@@ -9,7 +9,8 @@ CREATE TABLE cliente (
 	cliente_id INTEGER PRIMARY KEY,
 	nome TEXT NOT NULL,
 	contato TEXT NOT NULL,
-	endereco_id INTEGER NOT NULL
+	endereco_id INTEGER NOT NULL,
+	FOREIGN KEY (endereco_id) REFERENCES endereco(endereco_id)
 );
 
 CREATE TABLE endereco (
