@@ -1,0 +1,21 @@
+
+<div style="padding: 10px;">
+	<h1>Meu Site</h1>
+	<p>Bem vindo ao meu site!</p>
+	
+	<p>
+		Suas Curtidas: <span id="curtidas">{{ curtidas }}</span>
+	</p>
+	
+	<button hx-post="/curtir"
+		hx-target="#curtidas">
+		Curtir
+	</button>
+	
+	<button hx-post="/limpar-curtidas"
+		hx-target="#curtidas"
+		hx-confirm="Tem certeza que deseja limpar suas curtidas?">
+	
+		Limpar Curtidas
+	</button>
+</div>

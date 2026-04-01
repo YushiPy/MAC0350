@@ -1,0 +1,75 @@
+<!-- Arquivo index.html -->
+
+{% extends "base.html" %}
+
+{# Adds to the <head> section of base.html. #}
+{% block head_extra %}
+	<title>Index</title>
+	<link id="page-style" rel="stylesheet" href="">
+	<style>
+		.top-nav {
+			display: flex;
+			gap: 1rem;
+			padding: 1rem;
+			border-bottom: 1px solid white;
+		}
+
+		.nav-button {
+			padding: 0.5rem 1rem;
+			color: white;
+			border-radius: 4px;
+			cursor: pointer;
+			margin: 0;
+		}
+
+		#main-content {
+			border: 3px solid white;
+
+			padding: 0;
+			background-color: rgb(22, 23, 27);
+			margin: 1rem;
+
+			display: flex;
+			flex-direction: column;
+		}
+
+		.nav-button.active {
+			box-shadow: 0 0 8px 2px var(--text-color);
+			border: 1px solid var(--text-color);
+		}
+
+	</style>
+
+	<script>
+		document.addEventListener("htmx:afterRequest", (e) => {
+			document.querySelectorAll(".nav-button").forEach(b => b.classList.remove("active"));
+			e.target.classList.add("active");
+		});
+	</script>
+{% endblock %}
+
+{# Adds to the <body> section of base.html. #}
+{% block content %}
+	<nav class="top-nav">
+		<button class="nav-button"
+			hx-target="#main-content"
+			hx-get="/curtidas">
+		Curtidas</button>
+		<button class="nav-button"
+			hx-target="#main-content"
+			hx-get="/professor-page">
+			Professor
+		</button>
+		<button class="nav-button"
+			hx-target="#main-content"
+			hx-get="/jupiterweb">
+			JupiterWeb
+		</button>
+	</nav>
+
+	<main id="main-content">
+		<h1>Bem-vindo ao meu site!</h1>
+		<p>Use a barra de navegação para acessar as diferentes páginas.</p>
+	</main>
+
+{% endblock content %}
