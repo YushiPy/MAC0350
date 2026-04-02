@@ -9,7 +9,7 @@
 		</div>
 		<form class="save-form smart-form">
 			<input type="text" id="drawing-name" name="drawing-name" placeholder="Drawing Name" required>
-			<button id="save-drawing-final-button" class="save-drawing-button mix-bg darken-mixing" onclick="saveDrawing()">
+			<button id="save-drawing-final-button" class="save-drawing-button mix-bg darken-mixing" type="button" onclick="saveDrawing()">
 				Save
 			</button>
 		</form>
@@ -18,7 +18,6 @@
 
 <script>
 
-	
 	async function saveDrawing() {
 
 		const scene = window.scene; // Access the global scene object
@@ -27,7 +26,11 @@
 		if (!name) return;
 
 		await scene.saveToDB(name);
+
+		document.getElementById('save-prompt').innerHTML = '';
 	}
+
+	document.getElementById("drawing-name").focus();
 
 	document.addEventListener('click', function(event) {
 		

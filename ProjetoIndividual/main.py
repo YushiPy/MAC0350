@@ -205,28 +205,28 @@ async def save_drawing(request: Request, session: str | None = Cookie(default=No
 @app.get("/drawings", response_class=HTMLResponse)
 async def get_drawings(request: Request, session: str | None = Cookie(default=None)):
 
-    username = decode_token(session) if session else None
+	username = decode_token(session) if session else None
 
-    if not username:
-        return HTMLResponse("Unauthorized", status_code=401)
+	if not username:
+		return HTMLResponse("Unauthorized", status_code=401)
 
-    with Session(engine) as db:
-        user = db.exec(select(User).where(User.username == username)).first()
-        if not user:
-            return HTMLResponse("User not found", status_code=404)
+	with Session(engine) as db:
+		user = db.exec(select(User).where(User.username == username)).first()
+		if not user:
+			return HTMLResponse("User not found", status_code=404)
 
-        drawings = []
-        for d in user.drawings:
-            data = json.loads(d.data)
-            drawings.append({
-                "id": d.id,
-                "drawing_name": data.get("drawingName", "Untitled Drawing"),
-                "created_at": d.created_at.isoformat(),
-                "modified_at": d.modified_at.isoformat(),
-                "dataURL": data["dataURL"],
-            })
+		drawings = []
+		for d in user.drawings:
+			data = json.loads(d.data)
+			drawings.append({
+				"id": d.id,
+				"drawing_name": data.get("drawingName", "Untitled Drawing"),
+				"created_at": d.created_at.isoformat(),
+				"modified_at": d.modified_at.isoformat(),
+				"dataURL": data["dataURL"],
+			})
 
-    return templates.TemplateResponse("saved_drawings.html", {"request": request, "static": STATIC_PATH, "drawings": drawings})
+	return templates.TemplateResponse("saved_drawings.html", {"request": request, "static": STATIC_PATH, "drawings": drawings})
 
 @app.get("/drawings/{drawing_id}", response_class=HTMLResponse)
 async def get_drawing(request: Request, drawing_id: int, session: str | None = Cookie(default=None)):

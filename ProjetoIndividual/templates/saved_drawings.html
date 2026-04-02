@@ -38,6 +38,8 @@
 			.then(data => {
 				const scene = window.scene;
 				scene.loadFromData(data);
+
+				document.getElementById('saved-drawings-overlay').innerHTML = '';
 			})
 			.catch(error => {
 				console.error("Error loading drawing:", error);
