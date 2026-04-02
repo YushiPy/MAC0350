@@ -1,3 +1,6 @@
+
+<link rel="stylesheet" href="{{ static }}/css/login.css">
+
 <div id="login-overlay" class="login-overlay">
 	<div class="login-box">
 
@@ -38,5 +41,16 @@
 <script>
 
 	enableSmartNavigation(document.getElementById("login-form"));
+
+	document.addEventListener('click', function(event) {
+		const loginOverlay = document.getElementById('login-overlay');
+		const loginBox = document.querySelector('.login-box');
+
+		if (loginOverlay && !loginBox.contains(event.target)) {
+			document.getElementById('user-login-section').innerHTML = '';
+		}
+	});
+
+	document.querySelector('#username-field').focus();
 
 </script>

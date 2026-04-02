@@ -1,14 +1,29 @@
 
 from sqlalchemy.exc import IntegrityError
 
-from fastapi import FastAPI, Form, Request
+from fastapi import Cookie, FastAPI, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
 
 from sqlmodel import SQLModel, Session, create_engine, select
+
 import bcrypt
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
+
+SECRET_KEY = "ASFQEUBFOEUQB)!#H) #) UR)(*#!U&R) &)*#!&UR) &$#!)_( &$#)"
+serializer = URLSafeTimedSerializer(SECRET_KEY)
+
+def create_token(username: str) -> str:
+	return serializer.dumps(username)
+
+def decode_token(token: str) -> str | None:
+	try:
+		return serializer.loads(token, max_age=7 * 24 * 3600)  # 7 days
+	except (BadSignature, SignatureExpired):
+		return None
+
 
 from models import User
 
@@ -32,12 +47,14 @@ def create_db_and_tables():
 	SQLModel.metadata.create_all(engine)
 
 @app.get("/", response_class=HTMLResponse)
-async def get_main_page(request: Request):
-	return templates.TemplateResponse("index.html", {"request": request, "static": STATIC_PATH})
+async def get_main_page(request: Request, session: str | None = Cookie(default=None)):
+	username = decode_token(session) if session else None
+	return templates.TemplateResponse("index.html", {"request": request, "static": STATIC_PATH, "username": username})
 
 @app.get("/header", response_class=HTMLResponse)
-async def get_header(request: Request):
-	return templates.TemplateResponse("header.html", {"request": request, "static": STATIC_PATH})
+async def get_header(request: Request, session: str | None = Cookie(default=None)):
+	username = decode_token(session) if session else None
+	return templates.TemplateResponse("header.html", {"request": request, "static": STATIC_PATH, "username": username})
 
 @app.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
@@ -48,10 +65,10 @@ async def get_signup(request: Request):
 	return templates.TemplateResponse("signup.html", {"request": request, "static": STATIC_PATH})
 
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+	return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 def verify_password(password: str, hashed: str) -> bool:
-    return bcrypt.checkpw(password.encode(), hashed.encode())
+	return bcrypt.checkpw(password.encode(), hashed.encode())
 
 def create_user(username: str, password: str):
 
@@ -146,8 +163,20 @@ async def post_login(
 	def make_success(message: str) -> HTMLResponse:
 		return HTMLResponse(f'<p style="color: green; font-size: 1.5rem; margin: 0;">{message}</p>')
 
-	if authenticate_user(username, password):
-		return make_success("Login successful")
-	else:
+	if not authenticate_user(username, password):
 		return make_error("Invalid username or password")
 
+	token = create_token(username)
+	response = HTMLResponse("", headers={"HX-Refresh": "true"})
+	response.set_cookie("session", token, httponly=True, samesite="lax")
+	return response
+
+@app.post("/logout", response_class=HTMLResponse)
+async def post_logout(request: Request):
+	response = HTMLResponse("", headers={"HX-Refresh": "true"})
+	response.delete_cookie("session")
+	return response
+
+@app.get("/canvas", response_class=HTMLResponse)
+async def get_canvas(request: Request):
+	return templates.TemplateResponse("canvas.html", {"request": request, "static": STATIC_PATH})

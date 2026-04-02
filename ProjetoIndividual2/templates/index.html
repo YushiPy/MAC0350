@@ -2,10 +2,7 @@
 {% extends "base.html" %}
 
 {% block head_extra %}
-	<link rel="stylesheet" href="{{ static }}/css/index_styles.css">
-	<link rel="stylesheet" href="{{ static }}/css/header_styles.css">
-	<link rel="stylesheet" href="{{ static }}/css/login_styles.css">
-	<link rel="stylesheet" href="{{ static }}/css/signup_styles.css">
+	<link rel="stylesheet" href="{{ static }}/css/index.css">
 {% endblock %}
 
 {% block content %}
@@ -22,6 +19,15 @@
 	</div>
 	<div class="drawing-section">
 
+	</div>
+
+	<div class="canvas-section"
+		hx-get="/canvas"
+		hx-trigger="load"
+		hx-target=".canvas-section"
+		hx-swap="innerHTML">
+	>
+		
 	</div>
 
 	<div id="user-login-section">

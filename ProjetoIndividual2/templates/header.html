@@ -1,4 +1,6 @@
 
+<link rel="stylesheet" href="{{ static }}/css/header.css">
+
 <div class="header-left">
 
 	<button id="folder-button" class="folder-button mix-color light-mixing">
@@ -36,7 +38,30 @@
 <div class="header-right">
 
 	{% if username %}
-		<button class="username-button">{{ username }}</button>
+	<div class="username-dropdown">
+		<button class="username-button mix-bg">
+			{{ username }}
+			<svg class="down-arrow-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+				<path 
+					fill-rule="evenodd" 
+					clip-rule="evenodd" 
+					d="M4.29289 8.29289C4.68342 7.90237 5.31658 7.90237 5.70711 8.29289L12 14.5858L18.2929 8.29289C18.6834 7.90237 19.3166 7.90237 19.7071 8.29289C20.0976 8.68342 20.0976 9.31658 19.7071 9.70711L12.7071 16.7071C12.3166 17.0976 11.6834 17.0976 11.2929 16.7071L4.29289 9.70711C3.90237 9.31658 3.90237 8.68342 4.29289 8.29289Z" 
+				/>
+			</svg>
+		</button>
+		<div class="dropdown-content">
+			<div class="dropdown-items">
+				<button class="dropdown-button mix-bg darken-mixing">
+					Profile Settings
+				</button>
+				<button class="dropdown-button mix-bg darken-mixing"
+					hx-post="/logout"
+				>
+					Log Out
+				</button>
+			</div>
+		</div>
+	</div>
 	{% else %}
 
 		<button class="login-button"
@@ -51,8 +76,44 @@
 			hx-target="#user-login-section"
 			hx-swap="innerHTML"
 		>
-			Signup
+			Sign Up
 		</button>
 	{% endif %}
 
 </div>
+
+<script>
+
+const dropdown = document.querySelector('.dropdown-content');
+
+function toggleDropdown(show) {
+
+	if (show) {
+		dropdown.style.opacity = "1";
+		dropdown.style.pointerEvents = "auto";
+	} else {
+		dropdown.style.opacity = "0";
+		dropdown.style.pointerEvents = "none";
+	}
+}
+
+if (dropdown) {
+	toggleDropdown(false);
+}
+
+document.addEventListener('click', function(event) {
+
+	const dropdown = document.querySelector('.dropdown-content');
+	const button = document.querySelector('.username-button');
+
+	if (!dropdown) return;
+	if (!button) return;
+
+	if (button.contains(event.target)) {
+		toggleDropdown(dropdown.style.opacity === "0");
+	} else if (!dropdown.contains(event.target)) {
+		toggleDropdown(false);
+	}
+});
+
+</script>

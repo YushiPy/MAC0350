@@ -1,10 +1,5 @@
 
-// HTML SOURCE SERVER
-// The above comment indicates that this file is referenced in an HTML file 
-// and should be ran from the context of that HTML file, not directly.
-
-// import { tppSolve } from "tpp.js";
-import { tppSolve } from "./tpp.js";
+import { tppSolve } from "./utpp.js";
 
 const canvas = document.getElementById("drawing-canvas");
 const ctx = canvas.getContext("2d");
@@ -271,6 +266,7 @@ function draw_polygon(points, color = "black") {
 }
 
 function draw_polygon_glowing(points, color) {
+
 	ctx.save();
 	ctx.shadowColor = color;
 	ctx.shadowBlur = 20;
