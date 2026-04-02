@@ -1,0 +1,26 @@
+
+{% extends "base.html" %}
+
+{% block head_extra %}
+	<link rel="stylesheet" href="{{ static }}/css/index_styles.css">
+	<link rel="stylesheet" href="{{ static }}/css/header_styles.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="main-body">
+	<div class="main-header">
+		<div id="header" 
+			hx-get="/header"
+			hx-trigger="load"
+			hx-target="#header"
+			hx-swap="outerHTML">
+		</div>
+		<!-- O conteúdo do header será carregado aqui -->		
+	</div>
+	<div class="drawing-section">
+
+	</div>
+</div>
+
+{% endblock %}

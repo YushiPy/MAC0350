@@ -92,6 +92,7 @@ body {
 }
 
 button {
+
 	background-color: var(--button-accent-color);
 	border: none;
 	color: var(--header-text-color);

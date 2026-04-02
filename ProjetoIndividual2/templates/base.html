@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+		<link href="{{ static }}/css/base_styles.css" rel="stylesheet">
+		<script src="{{ static }}/base_script.js" defer></script>
+
+		<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.js" integrity="sha384-ezjq8118wdwdRMj+nX4bevEi+cDLTbhLAeFF688VK8tPDGeLUe0WoY2MZtSla72F" crossorigin="anonymous"></script>
+				
+		{% block head_extra %}{% endblock %}		
+
+	</head>
+	<body>
+		{% block content %}{% endblock %}
+	</body>
+</html>
