@@ -61,44 +61,20 @@
 	const vertexLineToggleOnIcon = document.getElementById("vertex-line-toggle-on");
 	const vertexLineToggleOffIcon = document.getElementById("vertex-line-toggle-off");
 
-	let showVertices = true;
+	vertexLineToggle.toggleIcons = () => {
 
-	function updateVertexLineToggleIcons() {
-		if (showVertices) {
+		const isActive = vertexLineToggle.classList.contains("active");
+
+		if (isActive) {
 			vertexLineToggleOnIcon.style.display = "block";
 			vertexLineToggleOffIcon.style.display = "none";
-			vertexLineToggle.classList.add("active");
 		} else {
 			vertexLineToggleOnIcon.style.display = "none";
 			vertexLineToggleOffIcon.style.display = "block";
-			vertexLineToggle.classList.remove("active");
 		}
 	}
 
-	updateVertexLineToggleIcons();
-
-	vertexLineToggle.addEventListener("click", () => {
-
-		showVertices = !showVertices;
-
-		updateVertexLineToggleIcons();
-
-		const event = new CustomEvent("toggleVertices", { detail: { showVertices } });
-		document.dispatchEvent(event);
-	});
-
-	const toolBar = document.getElementById("tool-bar");
-
-	toolBar.addEventListener("click", (event) => {
-		
-		const button = event.target.closest(".tool-button");
-		
-		if (!button) return;
-
-		if (button.classList.contains("toggleable")) {
-			button.classList.toggle("active");
-		}
-	});
+	vertexLineToggle.toggleIcons();
 
 </script>
 

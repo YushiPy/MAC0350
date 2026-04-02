@@ -11,7 +11,7 @@
 				</div>
 				<div class="drawing-info">
 					<span class="drawing-title">{{ drawing.drawing_name }}</span>
-					<span class="drawing-date">{{ drawing.modified_at }}</span>
+					<span class="drawing-date" data-date="{{ drawing.modified_at }}Z"></span>
 				</div>
 			</div>
 			{% endfor %}
@@ -31,6 +31,33 @@
 			document.getElementById('saved-drawings-overlay').innerHTML = '';
 		}
 	});
+
+	document.querySelectorAll(".drawing-date").forEach(el => {
+		el.textContent = timeAgo(el.dataset.date);
+	});
+
+	function timeAgo(dateStr) {
+		const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000);
+
+		const intervals = [
+			[31536000, "year"],
+			[2592000,  "month"],
+			[604800,   "week"],
+			[86400,    "day"],
+			[3600,     "hour"],
+			[60,       "minute"],
+			[1,        "second"],
+		];
+
+		console.log(seconds);
+
+		for (const [secs, label] of intervals) {
+			const count = Math.floor(seconds / secs);
+			if (count >= 1) return `${count} ${label}${count !== 1 ? "s" : ""} ago`;
+		}
+
+		return "just now";
+	}
 
 	function loadDrawing(drawingId) {
 		fetch(`/drawings/${drawingId}`)

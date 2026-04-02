@@ -225,6 +225,8 @@ async def get_drawings(request: Request, session: str | None = Cookie(default=No
 				"modified_at": d.modified_at.isoformat(),
 				"dataURL": data["dataURL"],
 			})
+		
+		drawings.sort(key=lambda d: d["modified_at"], reverse=True)
 
 	return templates.TemplateResponse("saved_drawings.html", {"request": request, "static": STATIC_PATH, "drawings": drawings})
 

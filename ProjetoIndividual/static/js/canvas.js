@@ -594,6 +594,7 @@ class Scene {
 	// --- Input ---
 
 	_updateSnapping(value) {
+		
 		this.snapping = value;
 
 		if (this.snapping) {
@@ -625,6 +626,7 @@ class Scene {
 	}
 	
 	_initInput() {
+		
 		// Remove old listeners first
 		this._removeInput();
 
@@ -648,6 +650,46 @@ class Scene {
 		document.addEventListener("keydown",    this._boundKeyDown);
 		document.addEventListener("keyup",      this._boundKeyUp);
 		canvas.addEventListener("wheel",        this._boundWheel, { passive: false });
+
+		const snapButton = document.getElementById(settings.SNAP_BUTTON_ID);
+		
+		if (snapButton) {
+			this.snapButton = snapButton;
+			
+			snapButton.addEventListener("click", () => {
+				this._updateSnapping(!this.snapping)
+			});
+		}
+
+		const vertexLineButton = document.getElementById(settings.SHOW_VERTEX_LINE_BUTTON_ID);
+		if (vertexLineButton) {
+			this.vertexLineButton = vertexLineButton;
+			vertexLineButton.addEventListener("click", () => {
+				this._updateShowVertexLine(!this.showVertexLine)
+				vertexLineButton.toggleIcons();
+			});
+		}
+
+		const triangleButton = document.getElementById(settings.MAKE_TRIANGLE_BUTTON_ID);
+
+		if (triangleButton) {
+
+			this.triangleButton = triangleButton;
+			
+			triangleButton.addEventListener("click", () => {
+
+				const radius = this.canvas.camera.pixelsToUnits * 100;
+				const center = this.canvas.canvasToWorld(this.canvas.width / 2, this.canvas.height / 2);
+
+				const points = [0, 1, 2].map(i => {
+					const angle = i * 2 * Math.PI / 3;
+					return new Vector2(Math.cos(angle), Math.sin(angle)).mul(radius).add(center);
+				});
+
+				this.polygons.push(new Polygon(points));
+				this.currentPolygon = this.polygons.length - 1;
+			});
+		}
 	}
 
 	_removeInput() {
@@ -897,6 +939,9 @@ class Scene {
 		this.snapToggle = document.getElementById(settings.SNAP_BUTTON_ID);
 		this.triangleButton = document.getElementById(settings.MAKE_TRIANGLE_BUTTON_ID);
 		this.vertexLineToggle = document.getElementById(settings.SHOW_VERTEX_LINE_BUTTON_ID);
+
+		this.snapping = false;
+		this.showVertexLine = false;
 
 		this._updateSnapping(data.snapping === null ? this.snapToggle.classList.contains("active") : data.snapping);
 		this._updateShowVertexLine(data.showVertexLine === null ? this.vertexLineToggle.classList.contains("active") : data.showVertexLine);
