@@ -176,63 +176,74 @@ async def get_canvas(request: Request):
 	return templates.TemplateResponse("canvas.html", {"request": request, "static": STATIC_PATH})
 
 
-class DrawingData(BaseModel):
-
-	startPoint: list[float]
-	targetPoint: list[float]
-	polygons: list[list[list[float]]]
-
-	currentPolygon: int | None
-	currentPolygonVertex: int | None
-	scrollSensitivity: float
-	snapping: bool
-	showVertexLine: bool
-
-	camera: dict[str, list[float] | float]
-
-	dataURL: str
-	width: int
-	height: int
+@app.get("/save_prompt", response_class=HTMLResponse)
+async def get_saved_drawings_prompt(request: Request):
+	return templates.TemplateResponse("save_prompt.html", {"request": request, "static": STATIC_PATH})
 
 @app.post("/drawings/save")
-async def save_drawing(request: Request, data: DrawingData, session: str | None = Cookie(default=None)):
-
+async def save_drawing(request: Request, session: str | None = Cookie(default=None)):
 	username = decode_token(session) if session else None
 
 	if username is None:
 		raise HTTPException(status_code=401, detail="Unauthorized")
-	
-	with Session(engine) as db:
 
+	data_json = await request.body()
+
+	with Session(engine) as db:
 		user = db.exec(select(User).where(User.username == username)).first()
 
 		if not user:
 			return HTMLResponse("User not found", status_code=404)
 
-		user_id: int = user.id # type: ignore
-		data_json = json.dumps(data.model_dump())
-
-		drawing = Drawing(user_id=user_id, data=data_json)
+		user_id: int = user.id  # type: ignore
+		drawing = Drawing(user_id=user_id, data=data_json.decode())
 		db.add(drawing)
 		db.commit()
 
 	return HTMLResponse("OK")
 
-@app.get("/drawings")
+@app.get("/drawings", response_class=HTMLResponse)
 async def get_drawings(request: Request, session: str | None = Cookie(default=None)):
 
     username = decode_token(session) if session else None
 
     if not username:
-        return JSONResponse("Unauthorized", status_code=401)
+        return HTMLResponse("Unauthorized", status_code=401)
 
     with Session(engine) as db:
-
         user = db.exec(select(User).where(User.username == username)).first()
-
         if not user:
-            return JSONResponse("User not found", status_code=404)
+            return HTMLResponse("User not found", status_code=404)
 
-        drawings = [{"id": d.id, "created_at": d.created_at.isoformat(), "modified_at": d.modified_at.isoformat()} for d in user.drawings]
+        drawings = []
+        for d in user.drawings:
+            data = json.loads(d.data)
+            drawings.append({
+                "id": d.id,
+                "drawing_name": data.get("drawingName", "Untitled Drawing"),
+                "created_at": d.created_at.isoformat(),
+                "modified_at": d.modified_at.isoformat(),
+                "dataURL": data["dataURL"],
+            })
 
-    return JSONResponse(drawings)
+    return templates.TemplateResponse("saved_drawings.html", {"request": request, "static": STATIC_PATH, "drawings": drawings})
+
+@app.get("/drawings/{drawing_id}", response_class=HTMLResponse)
+async def get_drawing(request: Request, drawing_id: int, session: str | None = Cookie(default=None)):
+
+	username = decode_token(session) if session else None
+
+	if not username:
+		return HTMLResponse("Unauthorized", status_code=401)
+
+	with Session(engine) as db:
+		user = db.exec(select(User).where(User.username == username)).first()
+		if not user:
+			return HTMLResponse("User not found", status_code=404)
+
+		drawing = db.exec(select(Drawing).where(Drawing.id == drawing_id, Drawing.user_id == user.id)).first()
+		if not drawing:
+			return HTMLResponse("Drawing not found", status_code=404)
+
+	data = json.loads(drawing.data)
+	return JSONResponse(data)

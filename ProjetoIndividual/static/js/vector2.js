@@ -3,9 +3,13 @@ export class Vector2 {
 
 	constructor(x, y) {
 
-		if (typeof x === "object" && x !== null) {
+		// Check if x is an object with x and y properties
+		if (typeof x === "object" && x !== null && "x" in x && "y" in x) {
 			this.x = x.x;
 			this.y = x.y;
+		} else if (typeof x === "object" && x !== null) {
+			this.x = x[0];
+			this.y = x[1];
 		} else {
 			this.x = x;
 			this.y = y;

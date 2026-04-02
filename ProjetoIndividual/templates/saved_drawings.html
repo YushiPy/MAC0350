@@ -1,0 +1,47 @@
+<link rel="stylesheet" href="{{ static }}/css/saved_drawings.css">
+
+<div class="drawings-overlay">
+	<div class="drawings-panel">
+		<h2>Saved Drawings</h2>
+		<div class="drawings-grid">
+			{% for drawing in drawings %}
+			<div class="drawing-card" onclick="loadDrawing({{ drawing.id }})">
+				<div class="drawing-thumbnail">
+					<img src="{{ drawing.dataURL }}" alt="{{ drawing.drawing_name }}">
+				</div>
+				<div class="drawing-info">
+					<span class="drawing-title">{{ drawing.drawing_name }}</span>
+					<span class="drawing-date">{{ drawing.modified_at }}</span>
+				</div>
+			</div>
+			{% endfor %}
+			{% if not drawings %}
+			<p class="no-drawings">No saved drawings yet.</p>
+			{% endif %}
+		</div>
+	</div>
+</div>
+
+<script>
+	document.addEventListener('click', function(event) {
+		const drawingsOverlay = document.querySelector('.drawings-overlay');
+		const drawingsBox = document.querySelector('.drawings-panel');
+
+		if (drawingsOverlay && !drawingsBox.contains(event.target)) {
+			document.getElementById('saved-drawings-overlay').innerHTML = '';
+		}
+	});
+
+	function loadDrawing(drawingId) {
+		fetch(`/drawings/${drawingId}`)
+			.then(response => response.json())
+			.then(data => {
+				const scene = window.scene;
+				scene.loadFromData(data);
+			})
+			.catch(error => {
+				console.error("Error loading drawing:", error);
+				alert("An error occurred while loading the drawing.");
+			});
+	}
+</script>

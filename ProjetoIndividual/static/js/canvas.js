@@ -240,6 +240,7 @@ class Scene {
 	constructor(data = null) {
 
 		if (!data) {
+			
 			data = {
 				startPoint: settings.INITIAL_START_POINT,
 				targetPoint: settings.INITIAL_TARGET_POINT,
@@ -255,46 +256,11 @@ class Scene {
 				camera: {
 					position: settings.INITIAL_CAMERA_POSITION,
 					unitsToPixels: settings.INITIAL_UNITS_TO_PIXELS,
-				}
+				},
 			};
 		}
-		
-		this.startPoint = new Vector2(data.startPoint);
-		this.targetPoint = new Vector2(data.targetPoint);
-		this.polygons = data.polygons.map(poly => new Polygon(poly));
 
-		this.currentPolygon = data.currentPolygon || 0;
-		this.currentPolygonVertex = data.currentPolygonVertex || 0;
-
-		const cameraData = data.camera || {};
-		const cameraPos = cameraData.position || settings.INITIAL_CAMERA_POSITION;
-		const unitsToPixels = cameraData.unitsToPixels || settings.INITIAL_UNITS_TO_PIXELS;
-
-		this.canvas = new Canvas(cameraPos, unitsToPixels);
-
-		this.snapToggle = document.getElementById(settings.SNAP_BUTTON_ID);
-		this.triangleButton = document.getElementById(settings.MAKE_TRIANGLE_BUTTON_ID);
-		this.vertexLineToggle = document.getElementById(settings.SHOW_VERTEX_LINE_BUTTON_ID);
-
-		this.mouseHeld = false;
-		this.mouseLocation = new Vector2(0, 0);
-		this.scrollSensitivity = data.scrollSensitivity || settings.SCROLL_SENSITIVITY;
-		this.dragging = null;
-		this.isDraggingCanvas = false;
-
-		this._updateSnapping(data.snapping === null ? this.snapToggle.classList.contains("active") : data.snapping);
-		this._updateShowVertexLine(data.showVertexLine === null ? this.vertexLineToggle.classList.contains("active") : data.showVertexLine);
-
-		this.selectionRect = null;
-		this.selectedPoints = [];
-		this.selectedPointsTotal = new Set();
-
-		this.lastClickTime = 0;
-		this.lastClickPosition = new Vector2(0, 0);
-		this.lastShiftPressTime = 0;
-		this.lastShiftPosition = new Vector2(0, 0);
-
-		this._initInput();
+		this.loadFromData(data);
 	}
 
 	// --- Coordinate helpers ---
@@ -650,61 +616,49 @@ class Scene {
 
 	_isOverlayUp() {
 
-		const overlay = document.getElementById(settings.OVERLAY_ELEMENT_ID);
+		for (const id of settings.OVERLAY_ELEMENTS_ID) {
+			const overlay = document.getElementById(id);
+			if (overlay && overlay.innerHTML.trim() !== "") return true;
+		}
 
-		return overlay && overlay.innerHTML.trim() !== "";
+		return false;
 	}
-
+	
 	_initInput() {
+		// Remove old listeners first
+		this._removeInput();
 
 		const canvas = this.canvas.canvas;
 
-		window.addEventListener("blur", () => {
-			this.mouseHeld = false;
-			this.dragging = null;
-		});
-
-		document.addEventListener("mouseleave", () => {
-			this.mouseHeld = false;
-			this.dragging = null;
-		});
-
-		canvas.addEventListener("mousedown", (e) => this._onMouseDown(e));
-		canvas.addEventListener("mouseup",   (e) => this._onMouseUp(e));
-		document.addEventListener("mousemove", (e) => this._onMouseMove(e));
-		document.addEventListener("keydown",   (e) => this._onKeyDown(e));
-		document.addEventListener("keyup",     (e) => this._onKeyUp(e));
-
-		canvas.addEventListener("wheel", (e) => {
+		this._boundMouseDown = (e) => this._onMouseDown(e);
+		this._boundMouseUp   = (e) => this._onMouseUp(e);
+		this._boundMouseMove = (e) => this._onMouseMove(e);
+		this._boundKeyDown   = (e) => this._onKeyDown(e);
+		this._boundKeyUp     = (e) => this._onKeyUp(e);
+		this._boundWheel     = (e) => {
 			e.preventDefault();
 			this.changeZoom(1 - e.deltaY * this.scrollSensitivity, this.mouseLocation);
-		}, { passive: false });
+		};
 
-		this.snapToggle.addEventListener("click", () => {
-			this.snapping = !this.snapping;
-		});
+		window.addEventListener("blur", () => { this.mouseHeld = false; this.dragging = null; });
+		document.addEventListener("mouseleave", () => { this.mouseHeld = false; this.dragging = null; });
+		document.addEventListener("mousedown",  this._boundMouseDown);
+		document.addEventListener("mouseup",    this._boundMouseUp);
+		document.addEventListener("mousemove",  this._boundMouseMove);
+		document.addEventListener("keydown",    this._boundKeyDown);
+		document.addEventListener("keyup",      this._boundKeyUp);
+		canvas.addEventListener("wheel",        this._boundWheel, { passive: false });
+	}
 
-		this.triangleButton.addEventListener("click", () => {
+	_removeInput() {
+		if (!this._boundMouseDown) return;
 
-			const screenCenter = this.canvas.center;
-
-			const points = [0, 1, 2].map(i => {
-				const angle = i * 2 * Math.PI / 3 - Math.PI / 2;
-				const radius = 50;
-				const offset = new Vector2(Math.cos(angle), Math.sin(angle)).mul(radius);
-				return this.canvas.canvasToWorld(screenCenter.add(offset));
-			});
-
-			const color = settings.POLYGON_COLORS[this.polygons.length % settings.POLYGON_COLORS.length];
-
-			const newPoly = new Polygon(points, color);
-			this.polygons.push(newPoly);
-			this.currentPolygon = this.polygons.length - 1;
-		});
-
-		this.vertexLineToggle.addEventListener("click", () => {
-			this.showVertexLine = !this.showVertexLine;
-		});
+		document.removeEventListener("mousedown",  this._boundMouseDown);
+		document.removeEventListener("mouseup",    this._boundMouseUp);
+		document.removeEventListener("mousemove",  this._boundMouseMove);
+		document.removeEventListener("keydown",    this._boundKeyDown);
+		document.removeEventListener("keyup",      this._boundKeyUp);
+		this.canvas?.canvas.removeEventListener("wheel", this._boundWheel);
 	}
 
 	_getCanvasPos(e) {
@@ -805,6 +759,13 @@ class Scene {
 		}
 	}
 
+	_onMouseWheel(e) {
+		if (this._isOverlayUp()) return;
+
+		e.preventDefault();
+		this.changeZoom(1 - e.deltaY * this.scrollSensitivity, this.mouseLocation);
+	}
+
 	_onKeyDown(e) {
 		
 		if (this._isOverlayUp()) return;
@@ -881,7 +842,7 @@ class Scene {
 
 	// --- Save and load ---
 
-	saveData() {
+	saveData(drawingName) {
 
 		const dataURL = scene.canvas.canvas.toDataURL("image/png");
 
@@ -905,14 +866,16 @@ class Scene {
 			dataURL: dataURL,
 			width: this.canvas.width,
 			height: this.canvas.height,
+
+			drawingName: drawingName,
 		};
 
 		return JSON.stringify(data);
 	}
 
-	async saveToDB() {
+	async saveToDB(drawingName) {
 
-		const data = this.saveData();
+		const data = this.saveData(drawingName);
 
 		await fetch(settings.SAVE_DRAWING_ENDPOINT_URL, {
 			method: "POST",
@@ -920,13 +883,53 @@ class Scene {
 			body: data,
 		});
 	}
+
+	loadFromData(data) {
+		
+		this.startPoint = new Vector2(data.startPoint);
+		this.targetPoint = new Vector2(data.targetPoint);
+		this.polygons = data.polygons.map(poly => new Polygon(poly));
+
+		this.currentPolygon = data.currentPolygon || 0;
+		this.currentPolygonVertex = data.currentPolygonVertex || 0;
+		this.scrollSensitivity = data.scrollSensitivity || settings.SCROLL_SENSITIVITY;
+
+		this.snapToggle = document.getElementById(settings.SNAP_BUTTON_ID);
+		this.triangleButton = document.getElementById(settings.MAKE_TRIANGLE_BUTTON_ID);
+		this.vertexLineToggle = document.getElementById(settings.SHOW_VERTEX_LINE_BUTTON_ID);
+
+		this._updateSnapping(data.snapping === null ? this.snapToggle.classList.contains("active") : data.snapping);
+		this._updateShowVertexLine(data.showVertexLine === null ? this.vertexLineToggle.classList.contains("active") : data.showVertexLine);
+
+		const cameraData = data.camera || {};
+		const cameraPos = cameraData.position || settings.INITIAL_CAMERA_POSITION;
+		const unitsToPixels = cameraData.unitsToPixels || settings.INITIAL_UNITS_TO_PIXELS;
+
+		this.canvas = new Canvas(cameraPos, unitsToPixels);
+
+		this.canvas.camera.position = new Vector2(cameraPos);
+		this.canvas.camera.unitsToPixels = unitsToPixels;
+
+		this.mouseHeld = false;
+		this.mouseLocation = new Vector2(0, 0);
+		this.dragging = null;
+		this.isDraggingCanvas = false;
+
+		this.selectionRect = null;
+		this.selectedPoints = [];
+		this.selectedPointsTotal = new Set();
+
+		this.lastClickTime = 0;
+		this.lastClickPosition = new Vector2(0, 0);
+		this.lastShiftPressTime = 0;
+		this.lastShiftPosition = new Vector2(0, 0);
+
+		this._initInput();
+	}
 }
 
 const scene = new Scene();
-
-const button = document.getElementById(settings.SAVE_DRAWING_BUTTON_ID);
-
-button.addEventListener("click", () => scene.saveToDB());
+window.scene = scene; // Expose for exporting
 
 function animate() {
 	scene.draw();
@@ -934,4 +937,3 @@ function animate() {
 }
 
 animate();
-

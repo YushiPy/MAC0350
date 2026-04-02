@@ -3,7 +3,12 @@
 
 <div class="header-left">
 
-	<button id="folder-button" class="folder-button mix-color light-mixing">
+	<button id="folder-button" class="folder-button mix-color light-mixing"
+		hx-get="/drawings"
+		hx-trigger="click"
+		hx-target="#saved-drawings-overlay"
+		hx-swap="innerHTML"
+	>
 		<svg 
 			width="22" height="16" viewBox="0 0 22 16" xmlns="http://www.w3.org/2000/svg">
 			<path d="M0.988 15.306H0C0 15.852 0.443 16.294 0.988 16.294L0.988 15.306ZM18.27 15.306V16.294C18.708 16.294 19.096 16.009 19.22 15.585L18.27 15.306ZM20.659 7.184L21.609 7.463L21.982 6.204H20.659V7.184ZM5.259 7.184V6.204H4.514L4.308 6.921L5.259 7.184ZM0.988 0.988V0C0.443 0 0 0.443 0 0.988L0.988 0.988ZM7.84 0.988L8.495 0.305C8.311 0.110 8.059 0 7.84 0V0.988ZM9.91 3.147L9.255 3.830C9.439 4.025 9.691 4.135 9.91 4.135V3.147ZM19.018 4.135C19.563 4.135 20.006 3.692 20.006 3.147C20.006 2.602 19.563 2.159 19.018 2.159V3.147V4.135ZM18.27 15.306L19.22 15.585L21.609 7.463L20.659 7.184L19.708 6.905L17.319 14.027L18.27 15.306ZM20.659 7.184V6.204H5.259V7.184V8.165H20.659V7.184ZM0.988 15.306V16.294H2.884V15.306V14.318H0.988V15.306ZM2.884 15.306V16.294H18.27V15.306V14.318H2.884V15.306ZM5.259 7.184L4.308 6.921L1.919 14.027L2.884 15.306L3.849 15.585L6.209 7.463L5.259 7.184ZM0.988 15.306H1.978V0.988H0.988H0V15.306H0.988ZM7.84 0.988L7.185 1.671L9.255 3.830L9.91 3.147L10.565 2.464L8.495 0.305L7.84 0.988ZM9.91 3.147V4.135H19.018V3.147V2.159H9.91V3.147ZM0.988 0.988V1.978H7.84V0.988V0H0.988V0.988Z"/>
@@ -20,7 +25,11 @@
 		</span>
 	</div>
 
-	<button id="save-drawing-button" class="save-button mix-bg darken-mixing">
+	<button id="save-drawing-button" class="save-button mix-bg darken-mixing"
+		hx-get="/save_prompt"
+		hx-target="#save-prompt"
+		hx-swap="innerHTML"
+	>
 		<span>Save</span>
 	</button>
 </div>
