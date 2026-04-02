@@ -629,11 +629,19 @@ class Scene {
 		});
 
 		this.triangleButton.addEventListener("click", () => {
-			const newPoly = new Polygon([
-				this.canvas.canvasToWorld(this.mouseLocation),
-				this.canvas.canvasToWorld(this.mouseLocation.x + 20, this.mouseLocation.y),
-				this.canvas.canvasToWorld(this.mouseLocation.x + 10, this.mouseLocation.y - 20),
-			], settings.POLYGON_COLORS[this.polygons.length % settings.POLYGON_COLORS.length]);
+
+			const screenCenter = this.canvas.center;
+
+			const points = [0, 1, 2].map(i => {
+				const angle = i * 2 * Math.PI / 3 - Math.PI / 2;
+				const radius = 50;
+				const offset = new Vector2(Math.cos(angle), Math.sin(angle)).mul(radius);
+				return this.canvas.canvasToWorld(screenCenter.add(offset));
+			});
+
+			const color = settings.POLYGON_COLORS[this.polygons.length % settings.POLYGON_COLORS.length];
+
+			const newPoly = new Polygon(points, color);
 			this.polygons.push(newPoly);
 			this.currentPolygon = this.polygons.length - 1;
 		});
@@ -756,6 +764,10 @@ class Scene {
 		if (e.key === "Backspace" || e.key === "Delete" || e.key === "x") {
 			this._deleteSelected();
 		}
+
+		if (e.key === "1") {this.snapToggle.click();}
+		if (e.key === "2") {this.triangleButton.click();}
+		if (e.key === "3") {this.vertexLineToggle.click();}
 	}
 
 	_onKeyUp(e) {
