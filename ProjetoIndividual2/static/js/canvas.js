@@ -613,11 +613,11 @@ class Scene {
 			this.dragging = null;
 		});
 
-		document.addEventListener("mousedown", (e) => this._onMouseDown(e));
-		document.addEventListener("mouseup",   (e) => this._onMouseUp(e));
+		canvas.addEventListener("mousedown", (e) => this._onMouseDown(e));
+		canvas.addEventListener("mouseup",   (e) => this._onMouseUp(e));
 		document.addEventListener("mousemove", (e) => this._onMouseMove(e));
-		document.addEventListener("keydown",   (e) => this._onKeyDown(e));
-		document.addEventListener("keyup",     (e) => this._onKeyUp(e));
+		canvas.addEventListener("keydown",   (e) => this._onKeyDown(e));
+		canvas.addEventListener("keyup",     (e) => this._onKeyUp(e));
 
 		canvas.addEventListener("wheel", (e) => {
 			e.preventDefault();
@@ -741,6 +741,7 @@ class Scene {
 	}
 
 	_onKeyDown(e) {
+		
 		const cam = this.canvas.camera;
 
 		if (e.key === "w") cam.position.y += 0.1;

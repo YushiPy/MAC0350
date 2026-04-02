@@ -150,3 +150,10 @@
 	align-items: center;
 	justify-content: center;
 }
+
+#user-login-section, .logged-in-section, .not-logged-in-section {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 10px;
+}

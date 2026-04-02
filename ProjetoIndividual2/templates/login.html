@@ -11,12 +11,12 @@
 			<input id="username-field" name="username" type="text" placeholder="Username" required />
 			<input id="password-field" name="password" type="password" placeholder="Password" required />
 
-			<div id="response"></div>
+			<div id="response-login"></div>
 
 			<button class="login-submit mix-bg darken-mixing"
 				hx-post="/login"
 				hx-include="#login-form input"
-				hx-target="#response"
+				hx-target="#response-login"
 				hx-swap="innerHTML"
 			>
 				Login
@@ -30,7 +30,7 @@
 			</div>
 			<button id="auth-switch-btn" type="submit" class="auth-switch-btn"
 				hx-get="/signup"
-				hx-target="#user-login-section"
+				hx-target="#user-login-section-outer"
 				hx-swap="innerHTML">
 				Create an account
 			</button>
@@ -47,10 +47,14 @@
 		const loginBox = document.querySelector('.login-box');
 
 		if (loginOverlay && !loginBox.contains(event.target)) {
-			document.getElementById('user-login-section').innerHTML = '';
+			document.getElementById('user-login-section-outer').innerHTML = '';
 		}
 	});
 
 	document.querySelector('#username-field').focus();
+
+	document.addEventListener('loginSuccess', function() {
+		document.getElementById('user-login-section-outer').innerHTML = '';
+	});
 
 </script>

@@ -1,4 +1,6 @@
 
+import json
+
 from sqlalchemy.exc import IntegrityError
 
 from fastapi import Cookie, FastAPI, Form, Request
@@ -53,8 +55,8 @@ async def get_main_page(request: Request, session: str | None = Cookie(default=N
 
 @app.get("/header", response_class=HTMLResponse)
 async def get_header(request: Request, session: str | None = Cookie(default=None)):
-	username = decode_token(session) if session else None
-	return templates.TemplateResponse("header.html", {"request": request, "static": STATIC_PATH, "username": username})
+    username = decode_token(session) if session else None
+    return templates.TemplateResponse("header.html", {"request": request, "static": STATIC_PATH, "username": username})
 
 @app.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
@@ -98,9 +100,6 @@ async def post_signup(
 	def make_error(message: str) -> HTMLResponse:
 		return HTMLResponse(f'<p style="color: red; font-size: 1.5rem; margin: 0;">{message}</p>')
 
-	def make_success(message: str) -> HTMLResponse:
-		return HTMLResponse(f'<p style="color: green; font-size: 1.5rem; margin: 0;">{message}</p>')
-
 	if password != confirm_password:
 		return make_error("Passwords do not match")
 
@@ -131,7 +130,9 @@ async def post_signup(
 	except Exception as e:
 		return make_error("An error occurred while creating the user")
 
-	response = make_success("User created successfully. You can now log in.")
+	token = create_token(username)
+	response = HTMLResponse("", headers={"HX-Trigger": json.dumps({"loginSuccess": {"username": username}})})
+	response.set_cookie("session", token, httponly=True, samesite="lax")
 
 	return response
 
@@ -148,32 +149,22 @@ def authenticate_user(username: str, password: str) -> bool:
 		return verify_password(password, user.password_hash)
 
 @app.post("/login", response_class=HTMLResponse)
-async def post_login(
-	request: Request,
-	username: str = Form(...),
-	password: str = Form(...)
-):
+async def post_login(request: Request, username: str = Form(...), password: str = Form(...)):
 
 	username = username.strip()
 	password = password.strip()
 
-	def make_error(message: str) -> HTMLResponse:
-		return HTMLResponse(f'<p style="color: red; font-size: 1.5rem; margin: 0;">{message}</p>')
-
-	def make_success(message: str) -> HTMLResponse:
-		return HTMLResponse(f'<p style="color: green; font-size: 1.5rem; margin: 0;">{message}</p>')
-
 	if not authenticate_user(username, password):
-		return make_error("Invalid username or password")
+		return HTMLResponse(f'<p style="color: red; font-size: 1.5rem; margin: 0;">Invalid username or password</p>')
 
 	token = create_token(username)
-	response = HTMLResponse("", headers={"HX-Refresh": "true"})
+	response = HTMLResponse("", headers={"HX-Trigger": json.dumps({"loginSuccess": {"username": username}})})
 	response.set_cookie("session", token, httponly=True, samesite="lax")
 	return response
 
 @app.post("/logout", response_class=HTMLResponse)
 async def post_logout(request: Request):
-	response = HTMLResponse("", headers={"HX-Refresh": "true"})
+	response = HTMLResponse("", headers={"HX-Trigger": "logoutSuccess"})
 	response.delete_cookie("session")
 	return response
 

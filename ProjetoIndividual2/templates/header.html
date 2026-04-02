@@ -36,50 +36,52 @@
 </div>
 
 <div class="header-right">
+    <div id="response"></div>
+	<div id="user-login-section" data-logged-in="{{ 'true' if username else 'false' }}">
 
-	{% if username %}
-	<div class="username-dropdown">
-		<button class="username-button mix-bg">
-			{{ username }}
-			<svg class="down-arrow-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-				<path 
-					fill-rule="evenodd" 
-					clip-rule="evenodd" 
-					d="M4.29289 8.29289C4.68342 7.90237 5.31658 7.90237 5.70711 8.29289L12 14.5858L18.2929 8.29289C18.6834 7.90237 19.3166 7.90237 19.7071 8.29289C20.0976 8.68342 20.0976 9.31658 19.7071 9.70711L12.7071 16.7071C12.3166 17.0976 11.6834 17.0976 11.2929 16.7071L4.29289 9.70711C3.90237 9.31658 3.90237 8.68342 4.29289 8.29289Z" 
-				/>
-			</svg>
-		</button>
-		<div class="dropdown-content">
-			<div class="dropdown-items">
-				<button class="dropdown-button mix-bg darken-mixing">
-					Profile Settings
+		<div class="logged-in-section">
+			<div class="username-dropdown">
+				<button class="username-button mix-bg">
+					{{ username }}
+					<svg class="down-arrow-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+						<path 
+							fill-rule="evenodd" 
+							clip-rule="evenodd" 
+							d="M4.29289 8.29289C4.68342 7.90237 5.31658 7.90237 5.70711 8.29289L12 14.5858L18.2929 8.29289C18.6834 7.90237 19.3166 7.90237 19.7071 8.29289C20.0976 8.68342 20.0976 9.31658 19.7071 9.70711L12.7071 16.7071C12.3166 17.0976 11.6834 17.0976 11.2929 16.7071L4.29289 9.70711C3.90237 9.31658 3.90237 8.68342 4.29289 8.29289Z" 
+						/>
+					</svg>
 				</button>
-				<button class="dropdown-button mix-bg darken-mixing"
-					hx-post="/logout"
-				>
-					Log Out
-				</button>
+				<div class="dropdown-content">
+					<div class="dropdown-items">
+						<button class="dropdown-button mix-bg darken-mixing">
+							Profile Settings
+						</button>
+						<button class="dropdown-button mix-bg darken-mixing"
+							hx-post="/logout"
+						>
+							Log Out
+						</button>
+					</div>
+				</div>
 			</div>
 		</div>
-	</div>
-	{% else %}
-
-		<button class="login-button"
-			hx-get="/login"
-			hx-target="#user-login-section"
-			hx-swap="innerHTML"
-		>
-			Login
-		</button>
-		<button class="signup-button mix-bg"
-			hx-get="/signup"
-			hx-target="#user-login-section"
-			hx-swap="innerHTML"
-		>
-			Sign Up
-		</button>
-	{% endif %}
-
+		<div class="not-logged-in-section">
+			<button class="login-button"
+				hx-get="/login"
+				hx-target="#user-login-section-outer"
+				hx-swap="innerHTML"
+			>
+				Login
+			</button>
+			<button class="signup-button mix-bg"
+				hx-get="/signup"
+				hx-target="#user-login-section-outer"
+				hx-swap="innerHTML"
+			>
+				Sign Up
+			</button>
+		</div>
+    </div>
 </div>
 
 <script>
@@ -116,4 +118,23 @@ document.addEventListener('click', function(event) {
 	}
 });
 
+function setLoggedIn(loggedIn) {
+    document.querySelector(".logged-in-section").style.display = loggedIn ? "" : "none";
+    document.querySelector(".not-logged-in-section").style.display = loggedIn ? "none" : "";
+}
+
+const section = document.getElementById("user-login-section");
+setLoggedIn(section.dataset.loggedIn === "true");
+
+if (section.dataset.loggedIn === "true") {
+    const usernameText = section.querySelector(".username-button");
+    // username is already rendered by Jinja, no need to update it
+}
+
+document.body.addEventListener("loginSuccess", (e) => {
+    document.querySelector(".username-button").firstChild.textContent = e.detail.username + " ";
+    setLoggedIn(true);
+});
+
+document.body.addEventListener("logoutSuccess", () => setLoggedIn(false));
 </script>

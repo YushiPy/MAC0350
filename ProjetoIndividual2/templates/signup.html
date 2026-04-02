@@ -12,12 +12,12 @@
 			<input id="password-field" name="password" type="password" placeholder="Password" required />
 			<input id="confirm-password-field" name="confirm_password" type="password" placeholder="Confirm Password" required />
 			
-			<div id="response"></div>
+			<div id="response-signup"></div>
 			
 			<button class="signup-submit mix-bg darken-mixing"
 				hx-post="/signup"
 				hx-include="#signup-form input"
-				hx-target="#response"
+				hx-target="#response-signup"
 				hx-swap="innerHTML"
 			>Sign Up</button>
 		</div>
@@ -28,7 +28,7 @@
 			</div>
 			<button id="auth-switch-btn" type="submit" class="auth-switch-btn"
 				hx-get="/login"
-				hx-target="#user-login-section"
+				hx-target="#user-login-section-outer"
 				hx-swap="innerHTML"
 			>
 				Log in
@@ -46,10 +46,14 @@
 		const signupBox = document.querySelector('.signup-box');
 
 		if (signupOverlay && !signupBox.contains(event.target)) {
-			document.getElementById('user-login-section').innerHTML = '';
+			document.getElementById('user-login-section-outer').innerHTML = '';
 		}
 	});
 
 	document.querySelector('#username-field').focus();
+
+	document.addEventListener('signupSuccess', function() {
+		document.getElementById('user-login-section-outer').innerHTML = '';
+	});
 
 </script>
