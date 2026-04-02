@@ -1,81 +1,238 @@
 
-import base64
-import re
+import json
 
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-import hashlib, secrets
-import os
+from sqlalchemy.exc import IntegrityError
 
-app = FastAPI()
+from fastapi import Cookie, FastAPI, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from contextlib import asynccontextmanager
 
-# Simple in-memory user store — swap for a real DB later
-users: dict[str, str] = {}
+from sqlmodel import SQLModel, Session, create_engine, select
 
-DRAWINGS_DIR = "drawings"
+import bcrypt
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
-class AuthRequest(BaseModel):
-	username: str
-	password: str
-	confirm_password: str | None = None
+from models import Drawing, User
+
+SECRET_KEY = "ASFQEUBFOEUQB)!#H) #) UR)(*#!U&R) &)*#!&UR) &$#!)_( &$#)"
+serializer = URLSafeTimedSerializer(SECRET_KEY)
+
+def create_token(username: str) -> str:
+	return serializer.dumps(username)
+
+def decode_token(token: str) -> str | None:
+	try:
+		return serializer.loads(token, max_age=7 * 24 * 3600)  # 7 days
+	except (BadSignature, SignatureExpired):
+		return None
+
+
+
+
+@asynccontextmanager
+async def initFunction(app: FastAPI):
+	create_db_and_tables()
+	yield
+
+STATIC_PATH = "/static"
+
+app = FastAPI(lifespan=initFunction)
+app.mount(STATIC_PATH, StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory=["templates"])
+
+arquivo_sqlite = "tpp.db"
+url_sqlite = f"sqlite:///{arquivo_sqlite}"
+engine = create_engine(url_sqlite)
+
+def create_db_and_tables():
+	SQLModel.metadata.create_all(engine)
+
+@app.get("/", response_class=HTMLResponse)
+async def get_main_page(request: Request, session: str | None = Cookie(default=None)):
+	username = decode_token(session) if session else None
+	return templates.TemplateResponse("index.html", {"request": request, "static": STATIC_PATH, "username": username})
+
+@app.get("/header", response_class=HTMLResponse)
+async def get_header(request: Request, session: str | None = Cookie(default=None)):
+	username = decode_token(session) if session else None
+	return templates.TemplateResponse("header.html", {"request": request, "static": STATIC_PATH, "username": username})
+
+@app.get("/login", response_class=HTMLResponse)
+async def get_login(request: Request):
+	return templates.TemplateResponse("login.html", {"request": request, "static": STATIC_PATH})
+
+@app.get("/signup", response_class=HTMLResponse)
+async def get_signup(request: Request):
+	return templates.TemplateResponse("signup.html", {"request": request, "static": STATIC_PATH})
 
 def hash_password(password: str) -> str:
-	return hashlib.sha256(password.encode()).hexdigest()
+	return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-@app.post("/auth/register")
-def register(req: AuthRequest):
-	if req.username in users:
-		raise HTTPException(status_code=400, detail="Username already taken.")
-	if req.confirm_password != req.password:
-		raise HTTPException(status_code=400, detail="Passwords do not match.")
-	users[req.username] = hash_password(req.password)
-	return {"message": "Account created."}
+def verify_password(password: str, hashed: str) -> bool:
+	return bcrypt.checkpw(password.encode(), hashed.encode())
 
-@app.post("/auth/login")
-def login(req: AuthRequest):
-	stored = users.get(req.username)
-	if not stored or stored != hash_password(req.password):
-		raise HTTPException(status_code=401, detail="Invalid username or password.")
-	# Replace this with a real JWT in production
-	token = secrets.token_hex(32)
-	return {"access_token": token}
+def create_user(username: str, password: str):
 
-class SaveDrawingRequest(BaseModel):
-	username: str
-	image_data: str  # Base64-encoded image data
+	password_hash = hash_password(password)
+
+	with Session(engine) as session:
+
+		user = User(username=username, password_hash=password_hash)
+		session.add(user)
+		session.commit()
+		session.refresh(user)
+
+		return user
+
+@app.post("/signup", response_class=HTMLResponse)
+async def post_signup(
+	request: Request,
+	username: str = Form(...),
+	password: str = Form(...),
+	confirm_password: str = Form(...)
+):
+	
+	username = username.strip()
+	password = password.strip()
+	confirm_password = confirm_password.strip()
+
+	def make_error(message: str) -> HTMLResponse:
+		return HTMLResponse(f'<p style="color: red; font-size: 1.5rem; margin: 0;">{message}</p>')
+
+	if password != confirm_password:
+		return make_error("Passwords do not match")
+
+	if len(username) == 0:
+		return make_error("Username cannot be empty")
+	
+	if len(password) < 1:
+		return make_error("Password must be at least 1 characters long")
+	
+	if not all(c.isalnum() or c in "_-." for c in username):
+		return make_error("Username can only contain letters, numbers, underscores, hyphens and dots")
+	
+	if not all(c.isprintable() for c in password):
+		return make_error("Password cannot contain non-printable characters")
+	
+	if username.startswith(".") or username.endswith("."):
+		return make_error("Username cannot start or end with a dot")
+
+	MAX_USERNAME_LENGTH = 100
+
+	if len(username) > MAX_USERNAME_LENGTH:
+		return make_error(f"Username cannot be longer than {MAX_USERNAME_LENGTH} characters")
+
+	try:
+		create_user(username, password)
+	except IntegrityError:
+		return make_error("Username already exists")
+	except Exception as e:
+		return make_error("An error occurred while creating the user")
+
+	token = create_token(username)
+	response = HTMLResponse("", headers={"HX-Trigger": json.dumps({"loginSuccess": {"username": username}})})
+	response.set_cookie("session", token, httponly=True, samesite="lax")
+
+	return response
+
+
+def authenticate_user(username: str, password: str) -> bool:
+
+	with Session(engine) as session:
+
+		user = session.exec(select(User).where(User.username == username)).first()
+
+		if user is None:
+			return False
+
+		return verify_password(password, user.password_hash)
+
+@app.post("/login", response_class=HTMLResponse)
+async def post_login(request: Request, username: str = Form(...), password: str = Form(...)):
+
+	username = username.strip()
+	password = password.strip()
+
+	if not authenticate_user(username, password):
+		return HTMLResponse(f'<p style="color: red; font-size: 1.5rem; margin: 0;">Invalid username or password</p>')
+
+	token = create_token(username)
+	response = HTMLResponse("", headers={"HX-Trigger": json.dumps({"loginSuccess": {"username": username}})})
+	response.set_cookie("session", token, httponly=True, samesite="lax")
+	return response
+
+@app.post("/logout", response_class=HTMLResponse)
+async def post_logout(request: Request):
+	response = HTMLResponse("", headers={"HX-Trigger": "logoutSuccess"})
+	response.delete_cookie("session")
+	return response
+
+@app.get("/canvas", response_class=HTMLResponse)
+async def get_canvas(request: Request):
+	return templates.TemplateResponse("canvas.html", {"request": request, "static": STATIC_PATH})
+
+
+class DrawingData(BaseModel):
+
+	startPoint: list[float]
+	targetPoint: list[float]
+	polygons: list[list[list[float]]]
+
+	currentPolygon: int | None
+	currentPolygonVertex: int | None
+	scrollSensitivity: float
+	snapping: bool
+	showVertexLine: bool
+
+	camera: dict[str, list[float] | float]
+
+	dataURL: str
+	width: int
+	height: int
 
 @app.post("/drawings/save")
-def save_image(req: SaveDrawingRequest):
+async def save_drawing(request: Request, data: DrawingData, session: str | None = Cookie(default=None)):
+
+	username = decode_token(session) if session else None
+
+	if username is None:
+		raise HTTPException(status_code=401, detail="Unauthorized")
 	
-	if req.username not in users:
-		raise HTTPException(status_code=401, detail="Unauthorized.")
+	with Session(engine) as db:
 
-	if not os.path.exists(DRAWINGS_DIR):
-		os.makedirs(DRAWINGS_DIR)
+		user = db.exec(select(User).where(User.username == username)).first()
 
-	user_folder = os.path.join(DRAWINGS_DIR, req.username)
+		if not user:
+			return HTMLResponse("User not found", status_code=404)
 
-	if not os.path.exists(user_folder):
-		os.makedirs(user_folder)
+		user_id: int = user.id # type: ignore
+		data_json = json.dumps(data.model_dump())
 
-	image_data = req.image_data
-	data = image_data.split(",")[1] if "," in image_data else image_data
-	print(image_data)
-	drawings = [f for f in os.listdir(user_folder) if f.startswith("drawing_") and f.endswith(".png")]
+		drawing = Drawing(user_id=user_id, data=data_json)
+		db.add(drawing)
+		db.commit()
 
-	next_index = 0
+	return HTMLResponse("OK")
 
-	for file in drawings:
-		regex_match = re.match(r"drawing_(\d+)\.png", file)
-		if regex_match:
-			index = int(regex_match.group(1))
-			next_index = max(next_index, index + 1)
+@app.get("/drawings")
+async def get_drawings(request: Request, session: str | None = Cookie(default=None)):
 
-	with open(os.path.join(user_folder, f"drawing_{next_index}.png"), "wb") as f:
-		f.write(base64.b64decode(data))
+    username = decode_token(session) if session else None
 
-	return {"message": "Drawing saved."}
+    if not username:
+        return JSONResponse("Unauthorized", status_code=401)
 
-# Serve your static files (html, css, js)
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+    with Session(engine) as db:
+
+        user = db.exec(select(User).where(User.username == username)).first()
+
+        if not user:
+            return JSONResponse("User not found", status_code=404)
+
+        drawings = [{"id": d.id, "created_at": d.created_at.isoformat(), "modified_at": d.modified_at.isoformat()} for d in user.drawings]
+
+    return JSONResponse(drawings)

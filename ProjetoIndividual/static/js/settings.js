@@ -49,9 +49,13 @@ export const SUB_GRID_WIDTH = 1;
 export const MINIMUM_GRID_SPACING = 83;
 
 export const HIT_RADIUS = 15;
-export const SCROLL_SENSITIVITY = 0.005;
+export const SCROLL_SENSITIVITY = 0.0005;
 export const DOUBLE_CLICK_TIME = 300; // milliseconds
 
 export const SNAP_BUTTON_ID = "snapping-toggle";
 export const MAKE_TRIANGLE_BUTTON_ID = "triangle-button";
 export const SHOW_VERTEX_LINE_BUTTON_ID = "vertex-line-toggle";
+export const SAVE_DRAWING_BUTTON_ID = "save-drawing-button";
+export const OVERLAY_ELEMENT_ID = "user-login-section-outer";
+
+export const SAVE_DRAWING_ENDPOINT_URL = "/drawings/save";

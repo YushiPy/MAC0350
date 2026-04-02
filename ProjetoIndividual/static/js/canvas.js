@@ -13,8 +13,12 @@ const floatToString = (integerPart, exponent) => {
 
 class Canvas {
 
-	constructor() {
-		this.camera = new Camera(settings.INITIAL_CAMERA_POSITION, settings.INITIAL_UNITS_TO_PIXELS);
+	constructor(cameraPos, unitsToPixels) {
+
+		if (!cameraPos) cameraPos = settings.INITIAL_CAMERA_POSITION;
+		if (!unitsToPixels) unitsToPixels = settings.INITIAL_UNITS_TO_PIXELS;
+
+		this.camera = new Camera(cameraPos, unitsToPixels);
 
 		const canvas = document.getElementById(settings.CANVAS_ELEMENT_ID);
 		const ctx = canvas.getContext("2d");
@@ -169,9 +173,8 @@ class Canvas {
 
 class Polygon {
 
-	constructor(points, color) {
+	constructor(points) {
 		this.points = points.map(p => new Vector2(p));
-		this.color = color;
 	}
 
 	*[Symbol.iterator]() {
@@ -234,15 +237,40 @@ class Camera {
 
 class Scene {
 
-	constructor() {
+	constructor(data = null) {
 
-		this.startPoint = new Vector2(settings.INITIAL_START_POINT);
-		this.targetPoint = new Vector2(settings.INITIAL_TARGET_POINT);
-		this.polygons = settings.INITIAL_POLYGONS.map(points => new Polygon(points));
+		if (!data) {
+			data = {
+				startPoint: settings.INITIAL_START_POINT,
+				targetPoint: settings.INITIAL_TARGET_POINT,
+				polygons: settings.INITIAL_POLYGONS,
 
-		this.currentPolygon = 0;
-		this.currentPolygonVertex = 0;
-		this.canvas = new Canvas();
+				currentPolygon: 0,
+				currentPolygonVertex: 0,
+				scrollSensitivity: settings.SCROLL_SENSITIVITY,
+
+				snapping: null,
+				showVertexLine: null,
+
+				camera: {
+					position: settings.INITIAL_CAMERA_POSITION,
+					unitsToPixels: settings.INITIAL_UNITS_TO_PIXELS,
+				}
+			};
+		}
+		
+		this.startPoint = new Vector2(data.startPoint);
+		this.targetPoint = new Vector2(data.targetPoint);
+		this.polygons = data.polygons.map(poly => new Polygon(poly));
+
+		this.currentPolygon = data.currentPolygon || 0;
+		this.currentPolygonVertex = data.currentPolygonVertex || 0;
+
+		const cameraData = data.camera || {};
+		const cameraPos = cameraData.position || settings.INITIAL_CAMERA_POSITION;
+		const unitsToPixels = cameraData.unitsToPixels || settings.INITIAL_UNITS_TO_PIXELS;
+
+		this.canvas = new Canvas(cameraPos, unitsToPixels);
 
 		this.snapToggle = document.getElementById(settings.SNAP_BUTTON_ID);
 		this.triangleButton = document.getElementById(settings.MAKE_TRIANGLE_BUTTON_ID);
@@ -250,12 +278,12 @@ class Scene {
 
 		this.mouseHeld = false;
 		this.mouseLocation = new Vector2(0, 0);
-		this.scrollSensitivity = settings.SCROLL_SENSITIVITY;
+		this.scrollSensitivity = data.scrollSensitivity || settings.SCROLL_SENSITIVITY;
 		this.dragging = null;
 		this.isDraggingCanvas = false;
 
-		this.snapping = this.snapToggle.classList.contains("active");
-		this.showVertexLine = this.vertexLineToggle.classList.contains("active");
+		this._updateSnapping(data.snapping === null ? this.snapToggle.classList.contains("active") : data.snapping);
+		this._updateShowVertexLine(data.showVertexLine === null ? this.vertexLineToggle.classList.contains("active") : data.showVertexLine);
 
 		this.selectionRect = null;
 		this.selectedPoints = [];
@@ -265,7 +293,6 @@ class Scene {
 		this.lastClickPosition = new Vector2(0, 0);
 		this.lastShiftPressTime = 0;
 		this.lastShiftPosition = new Vector2(0, 0);
-
 
 		this._initInput();
 	}
@@ -479,6 +506,7 @@ class Scene {
 	}
 
 	drawSolution() {
+
 		for (const poly of this.polygons) {
 			if (!poly.isConvex()) return;
 		}
@@ -491,7 +519,6 @@ class Scene {
 		try {
 			path = tppSolve(start, target, polys, true);
 		} catch (e) {
-			console.error("Error solving TPP:", e, [start, target, polys]);
 			return;
 		}
 
@@ -600,7 +627,36 @@ class Scene {
 
 	// --- Input ---
 
+	_updateSnapping(value) {
+		this.snapping = value;
+
+		if (this.snapping) {
+			this.snapToggle.classList.add("active");
+		} else {
+			this.snapToggle.classList.remove("active");
+		}
+	}
+
+	_updateShowVertexLine(value) {
+		
+		this.showVertexLine = value;
+
+		if (this.showVertexLine) {
+			this.vertexLineToggle.classList.add("active");
+		} else {
+			this.vertexLineToggle.classList.remove("active");
+		}
+	}
+
+	_isOverlayUp() {
+
+		const overlay = document.getElementById(settings.OVERLAY_ELEMENT_ID);
+
+		return overlay && overlay.innerHTML.trim() !== "";
+	}
+
 	_initInput() {
+
 		const canvas = this.canvas.canvas;
 
 		window.addEventListener("blur", () => {
@@ -616,8 +672,8 @@ class Scene {
 		canvas.addEventListener("mousedown", (e) => this._onMouseDown(e));
 		canvas.addEventListener("mouseup",   (e) => this._onMouseUp(e));
 		document.addEventListener("mousemove", (e) => this._onMouseMove(e));
-		canvas.addEventListener("keydown",   (e) => this._onKeyDown(e));
-		canvas.addEventListener("keyup",     (e) => this._onKeyUp(e));
+		document.addEventListener("keydown",   (e) => this._onKeyDown(e));
+		document.addEventListener("keyup",     (e) => this._onKeyUp(e));
 
 		canvas.addEventListener("wheel", (e) => {
 			e.preventDefault();
@@ -661,6 +717,9 @@ class Scene {
 	}
 
 	_onMouseDown(e) {
+
+		if (this._isOverlayUp()) return;
+
 		const pos = this._getCanvasPos(e);
 
 		this.lastClickTime     = performance.now();
@@ -692,6 +751,9 @@ class Scene {
 	}
 
 	_onMouseUp(e) {
+
+		if (this._isOverlayUp()) return;
+
 		this.isDraggingCanvas = false;
 
 		if (this.dragging) {
@@ -714,6 +776,9 @@ class Scene {
 	}
 
 	_onMouseMove(e) {
+
+		if (this._isOverlayUp()) return;
+
 		const bounds = this.canvas.canvas.getBoundingClientRect();
 		this.mouseLocation = new Vector2(e.clientX - bounds.left, e.clientY - bounds.top);
 
@@ -742,13 +807,15 @@ class Scene {
 
 	_onKeyDown(e) {
 		
+		if (this._isOverlayUp()) return;
+
 		const cam = this.canvas.camera;
 
 		if (e.key === "w") cam.position.y += 0.1;
 		if (e.key === "s") cam.position.y -= 0.1;
 		if (e.key === "a") cam.position.x -= 0.1;
 		if (e.key === "d") cam.position.x += 0.1;
-
+		
 		if (e.key === "=") this.changeZoom(1.1,       new Vector2(this.canvas.width / 2, this.canvas.height / 2));
 		if (e.key === "-") this.changeZoom(1 / 1.1,   new Vector2(this.canvas.width / 2, this.canvas.height / 2));
 
@@ -760,7 +827,7 @@ class Scene {
 		if (e.key === "ArrowUp")   this.currentPolygon++;
 		if (e.key === "ArrowDown") this.currentPolygon--;
 
-		if (e.key === "h") this.showVertexLine = !this.showVertexLine;
+		if (e.key === "h") this._updateShowVertexLine(!this.showVertexLine);
 
 		if (e.key === "Backspace" || e.key === "Delete" || e.key === "x") {
 			this._deleteSelected();
@@ -772,9 +839,13 @@ class Scene {
 	}
 
 	_onKeyUp(e) {
+
+		if (this._isOverlayUp()) return;
+
 		if (e.key === "Shift") {
+
 			this.unselectRect();
-			
+
 			const isRecent = this.lastShiftPressTime && (performance.now() - this.lastShiftPressTime < settings.DOUBLE_CLICK_TIME);
 			const isClose = this.mouseLocation.distanceTo(this.lastShiftPosition) < settings.HIT_RADIUS;
 
@@ -807,9 +878,55 @@ class Scene {
 		this.selectedPointsTotal = new Set();
 		this.selectedPoints = [];
 	}
+
+	// --- Save and load ---
+
+	saveData() {
+
+		const dataURL = scene.canvas.canvas.toDataURL("image/png");
+
+		const data = {
+
+			startPoint: [this.startPoint.x, this.startPoint.y],
+			targetPoint: [this.targetPoint.x, this.targetPoint.y],
+			polygons: this.polygons.map(poly => poly.points.map(p => [p.x, p.y])),
+
+			currentPolygon: this.currentPolygon,
+			currentPolygonVertex: this.currentPolygonVertex,
+			scrollSensitivity: this.scrollSensitivity,
+			snapping: this.snapping,
+			showVertexLine: this.showVertexLine,
+
+			camera: {
+				position: [this.canvas.camera.x, this.canvas.camera.y],
+				unitsToPixels: this.canvas.camera.unitsToPixels,
+			},
+
+			dataURL: dataURL,
+			width: this.canvas.width,
+			height: this.canvas.height,
+		};
+
+		return JSON.stringify(data);
+	}
+
+	async saveToDB() {
+
+		const data = this.saveData();
+
+		await fetch(settings.SAVE_DRAWING_ENDPOINT_URL, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: data,
+		});
+	}
 }
 
 const scene = new Scene();
+
+const button = document.getElementById(settings.SAVE_DRAWING_BUTTON_ID);
+
+button.addEventListener("click", () => scene.saveToDB());
 
 function animate() {
 	scene.draw();
@@ -817,3 +934,4 @@ function animate() {
 }
 
 animate();
+
