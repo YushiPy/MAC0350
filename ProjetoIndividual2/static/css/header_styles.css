@@ -62,6 +62,10 @@
 	gap: 10px;
 }
 
+.username-button {
+	
+}
+
 .logo-button {
 	--bg: transparent;
 	--color: var(--text-color);

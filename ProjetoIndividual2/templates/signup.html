@@ -1,0 +1,42 @@
+
+<div id="signup-overlay" class="signup-overlay">
+	<div class="signup-box">
+
+		<h2 class="menu-title">Sign Up</h2>
+
+		<div id="signup-form" class="signup-form">
+			
+			<input id="username-field" name="username" type="text" placeholder="Username" required />
+			<input id="password-field" name="password" type="password" placeholder="Password" required />
+			<input id="confirm-password-field" name="confirm_password" type="password" placeholder="Confirm Password" required />
+			
+			<div id="response"></div>
+			
+			<button class="signup-submit mix-bg darken-mixing"
+				hx-post="/signup"
+				hx-include="#signup-form input"
+				hx-target="#response"
+				hx-swap="innerHTML"
+			>Sign Up</button>
+		</div>
+
+		<div class="auth-switch">
+			<div id="auth-switch-text">
+				Already have an account?
+			</div>
+			<button id="auth-switch-btn" type="submit" class="auth-switch-btn"
+				hx-get="/login"
+				hx-target="#user-login-section"
+				hx-swap="innerHTML"
+			>
+				Log in
+			</button>
+		</div>
+	</div>
+</div>
+
+<script>
+
+	enableSmartNavigation(document.getElementById("signup-form"));
+
+</script>

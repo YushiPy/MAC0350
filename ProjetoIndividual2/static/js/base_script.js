@@ -46,4 +46,9 @@ function enableSmartNavigation(form) {
 
 const smartFormClass = ".smart-form";
 
-document.querySelectorAll(smartFormClass).forEach(enableSmartNavigation);
+function initSmartForms() {
+	document.querySelectorAll(smartFormClass).forEach(enableSmartNavigation);
+}
+
+document.addEventListener("DOMContentLoaded", initSmartForms);
+document.addEventListener("htmx:afterSwap", initSmartForms);

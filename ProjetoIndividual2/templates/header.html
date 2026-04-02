@@ -36,13 +36,21 @@
 <div class="header-right">
 
 	{% if username %}
-		<button class="username">{{ username }}</button>
+		<button class="username-button">{{ username }}</button>
 	{% else %}
 
-		<button class="login-button">
+		<button class="login-button"
+			hx-get="/login"
+			hx-target="#user-login-section"
+			hx-swap="innerHTML"
+		>
 			Login
 		</button>
-		<button class="signup-button mix-bg">
+		<button class="signup-button mix-bg"
+			hx-get="/signup"
+			hx-target="#user-login-section"
+			hx-swap="innerHTML"
+		>
 			Signup
 		</button>
 	{% endif %}
