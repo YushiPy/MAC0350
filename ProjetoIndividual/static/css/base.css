@@ -15,9 +15,6 @@
 * {
 	font-family: var(--font-family);
 	font-size: var(--font-size);
-
-	color: currentColor;
-	fill: currentColor;
 }
 
 body {
@@ -60,6 +57,8 @@ button:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 	pointer-events: none;
+	color: transparent;
+	border-color: var(--text-color);
 }
 
 /* ============================================================
@@ -271,4 +270,11 @@ button:disabled {
 	margin: 0;
 	padding: 0;
 	width: 100%;
+}
+
+.dummy {
+	width: 0;
+	height: 0;
+	pointer-events: none;
+	opacity: 0;
 }

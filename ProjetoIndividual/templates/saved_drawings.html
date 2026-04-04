@@ -23,6 +23,7 @@
 </div>
 
 <script>
+
 	document.addEventListener('click', function(event) {
 		const drawingsOverlay = document.querySelector('.drawings-overlay');
 		const drawingsBox = document.querySelector('.drawings-panel');
@@ -49,8 +50,6 @@
 			[1,        "second"],
 		];
 
-		console.log(seconds);
-
 		for (const [secs, label] of intervals) {
 			const count = Math.floor(seconds / secs);
 			if (count >= 1) return `${count} ${label}${count !== 1 ? "s" : ""} ago`;
@@ -63,10 +62,12 @@
 		fetch(`/drawings/${drawingId}`)
 			.then(response => response.json())
 			.then(data => {
+
 				const scene = window.scene;
 				scene.loadFromData(data);
-
 				document.getElementById('saved-drawings-overlay').innerHTML = '';
+
+				setSavedDrawing(drawingId, data.drawingName);
 			})
 			.catch(error => {
 				console.error("Error loading drawing:", error);

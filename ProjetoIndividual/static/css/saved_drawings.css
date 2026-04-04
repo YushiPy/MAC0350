@@ -1,3 +1,4 @@
+
 .drawings-overlay {
     position: fixed;
     inset: 0;
@@ -11,7 +12,7 @@
 .drawings-panel {
     background: var(--header-color);
     border: 2px solid var(--accent-color);
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 20px;
     margin-top: 15vh;
     width: 70%;

@@ -22,7 +22,19 @@
 	width: 47px;
 	height: 47px;
 	outline: 2px solid var(--tool-bar-bg-color);
+
+	--bg: var(--accent-color);
 }
+
+.tool-button:hover {
+	outline: 2px solid var(--accent-color);
+	--bg: color-mix(in srgb, var(--accent-color) 80%, transparent);
+}
+
+.tool-button:active {
+	--bg: color-mix(in srgb, var(--accent-color) 60%, transparent);
+}
+
 
 .tool-button.active {
 	outline: 2px solid white;

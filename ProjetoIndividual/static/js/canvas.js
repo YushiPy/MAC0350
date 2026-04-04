@@ -589,37 +589,36 @@ class Scene {
 		this.drawSelectedPoints();
 		this.canvas.drawPointWorld(this.startPoint,  settings.START_POINT_COLOR,  settings.POINT_RADIUS, true);
 		this.canvas.drawPointWorld(this.targetPoint, settings.TARGET_POINT_COLOR, settings.POINT_RADIUS, true);
+
+		if (this.selectionRect) this.updateSelectionRect(null, this.mouseLocation);
 	}
 
 	// --- Input ---
-
-	_updateSnapping(value) {
-		
-		this.snapping = value;
-
-		if (this.snapping) {
-			this.snapToggle.classList.add("active");
-		} else {
-			this.snapToggle.classList.remove("active");
-		}
-	}
-
-	_updateShowVertexLine(value) {
-		
-		this.showVertexLine = value;
-
-		if (this.showVertexLine) {
-			this.vertexLineToggle.classList.add("active");
-		} else {
-			this.vertexLineToggle.classList.remove("active");
-		}
-	}
-
 	_isOverlayUp() {
 
 		for (const id of settings.OVERLAY_ELEMENTS_ID) {
+
 			const overlay = document.getElementById(id);
-			if (overlay && overlay.innerHTML.trim() !== "") return true;
+			
+			if (!overlay) continue;
+
+			const opacity = overlay.style.opacity;
+
+			if (opacity === 0 || opacity === "0") continue;
+			if (overlay.innerHTML.trim() !== "") return true;
+		}
+
+		return false;
+	}
+
+	_isBlockClickActive() {
+
+		for (const id of settings.BLOCK_CLICK_IDS) {
+			const element = document.getElementById(id);
+
+			if (element && element.style.opacity != 0 && element.innerHTML.trim() !== "") {
+				return true;
+			}
 		}
 
 		return false;
@@ -644,52 +643,20 @@ class Scene {
 
 		window.addEventListener("blur", () => { this.mouseHeld = false; this.dragging = null; });
 		document.addEventListener("mouseleave", () => { this.mouseHeld = false; this.dragging = null; });
-		document.addEventListener("mousedown",  this._boundMouseDown);
+		canvas.addEventListener("mousedown",  this._boundMouseDown);
 		document.addEventListener("mouseup",    this._boundMouseUp);
 		document.addEventListener("mousemove",  this._boundMouseMove);
 		document.addEventListener("keydown",    this._boundKeyDown);
 		document.addEventListener("keyup",      this._boundKeyUp);
 		canvas.addEventListener("wheel",        this._boundWheel, { passive: false });
 
-		const snapButton = document.getElementById(settings.SNAP_BUTTON_ID);
-		
-		if (snapButton) {
-			this.snapButton = snapButton;
-			
-			snapButton.addEventListener("click", () => {
-				this._updateSnapping(!this.snapping)
-			});
-		}
+		this._boundOnSnapping = () => this._updateSnapping(!this.snapping);
+		this._boundOnTriangle = () => this._onTriangle();
+		this._boundOnVertexLine = () => this._updateVertexLine(!this.showVertexLine);
 
-		const vertexLineButton = document.getElementById(settings.SHOW_VERTEX_LINE_BUTTON_ID);
-		if (vertexLineButton) {
-			this.vertexLineButton = vertexLineButton;
-			vertexLineButton.addEventListener("click", () => {
-				this._updateShowVertexLine(!this.showVertexLine)
-				vertexLineButton.toggleIcons();
-			});
-		}
-
-		const triangleButton = document.getElementById(settings.MAKE_TRIANGLE_BUTTON_ID);
-
-		if (triangleButton) {
-
-			this.triangleButton = triangleButton;
-			
-			triangleButton.addEventListener("click", () => {
-
-				const radius = this.canvas.camera.pixelsToUnits * 100;
-				const center = this.canvas.canvasToWorld(this.canvas.width / 2, this.canvas.height / 2);
-
-				const points = [0, 1, 2].map(i => {
-					const angle = i * 2 * Math.PI / 3;
-					return new Vector2(Math.cos(angle), Math.sin(angle)).mul(radius).add(center);
-				});
-
-				this.polygons.push(new Polygon(points));
-				this.currentPolygon = this.polygons.length - 1;
-			});
-		}
+		this.snapButton.addEventListener("click", this._boundOnSnapping);
+		this.triangleButton.addEventListener("click", this._boundOnTriangle);
+		this.vertexLineButton.addEventListener("click", this._boundOnVertexLine);
 	}
 
 	_removeInput() {
@@ -700,7 +667,47 @@ class Scene {
 		document.removeEventListener("mousemove",  this._boundMouseMove);
 		document.removeEventListener("keydown",    this._boundKeyDown);
 		document.removeEventListener("keyup",      this._boundKeyUp);
-		this.canvas?.canvas.removeEventListener("wheel", this._boundWheel);
+		this.canvas.canvas.removeEventListener("wheel", this._boundWheel);
+
+		this.snapButton.removeEventListener("click", this._boundOnSnapping);
+		this.triangleButton.removeEventListener("click", this._boundOnTriangle);
+		this.vertexLineButton.removeEventListener("click", this._boundOnVertexLine);
+	}
+
+	_updateSnapping(value) {
+		
+		this.snapping = value;
+
+		if (this.snapping) {
+			this.snapButton.classList.add("active");
+		} else {
+			this.snapButton.classList.remove("active");
+		}
+	}
+
+	_onTriangle() {
+
+		const radius = this.canvas.camera.pixelsToUnits * 100;
+		const center = this.canvas.canvasToWorld(this.canvas.width / 2, this.canvas.height / 2);
+
+		const points = [0, 1, 2].map(i => {
+			const angle = i * 2 * Math.PI / 3;
+			return new Vector2(Math.cos(angle), Math.sin(angle)).mul(radius).add(center);
+		});
+
+		this.polygons.push(new Polygon(points));
+		this.currentPolygon = this.polygons.length - 1;
+	}
+
+	_updateVertexLine(value) {
+
+		this.showVertexLine = value;
+
+		if (this.showVertexLine) {
+			this.vertexLineButton.classList.add("active");
+		} else {
+			this.vertexLineButton.classList.remove("active");
+		}
 	}
 
 	_getCanvasPos(e) {
@@ -763,9 +770,9 @@ class Scene {
 		const isRecent = performance.now() - this.lastClickTime < 300;
 		const isClose  = this.mouseLocation.distanceTo(this.lastClickPosition) < settings.HIT_RADIUS;
 
-		if (isRecent && isClose && this.polygons.length > 0) {
+		if (isRecent && isClose && this.polygons.length > 0 && !this._isBlockClickActive()) {
 			const clamped    = this.clampToCanvas(this.mouseLocation);
-			const world      = this.canvas.canvasToWorld(clamped);
+			const world      = this.snapPoint(this.canvas.canvasToWorld(clamped));
 			const poly       = this.polygons[this.currentPolygon % this.polygons.length];
 			poly.points.push(world);
 		}
@@ -812,33 +819,20 @@ class Scene {
 		
 		if (this._isOverlayUp()) return;
 
-		const cam = this.canvas.camera;
-
-		if (e.key === "w") cam.position.y += 0.1;
-		if (e.key === "s") cam.position.y -= 0.1;
-		if (e.key === "a") cam.position.x -= 0.1;
-		if (e.key === "d") cam.position.x += 0.1;
-		
-		if (e.key === "=") this.changeZoom(1.1,       new Vector2(this.canvas.width / 2, this.canvas.height / 2));
-		if (e.key === "-") this.changeZoom(1 / 1.1,   new Vector2(this.canvas.width / 2, this.canvas.height / 2));
-
 		if (e.key === "Shift") {
-			this.updateSelectionRect(this.mouseLocation, this.mouseLocation);
-			
+			this.updateSelectionRect(this.mouseLocation, this.mouseLocation);	
 		}
 
 		if (e.key === "ArrowUp")   this.currentPolygon++;
 		if (e.key === "ArrowDown") this.currentPolygon--;
 
-		if (e.key === "h") this._updateShowVertexLine(!this.showVertexLine);
-
 		if (e.key === "Backspace" || e.key === "Delete" || e.key === "x") {
 			this._deleteSelected();
 		}
 
-		if (e.key === "1") {this.snapToggle.click();}
+		if (e.key === "1") {this.snapButton.click();}
 		if (e.key === "2") {this.triangleButton.click();}
-		if (e.key === "3") {this.vertexLineToggle.click();}
+		if (e.key === "3") {this.vertexLineButton.click();}
 	}
 
 	_onKeyUp(e) {
@@ -926,6 +920,17 @@ class Scene {
 		});
 	}
 
+	async updateDrawingData(drawingId, drawingName) {
+
+		const data = this.saveData(drawingName);
+		
+		await fetch(`${settings.UPDATE_DRAWING_ENDPOINT_URL}/${drawingId}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: data,
+		});
+	}
+
 	loadFromData(data) {
 		
 		this.startPoint = new Vector2(data.startPoint);
@@ -936,15 +941,15 @@ class Scene {
 		this.currentPolygonVertex = data.currentPolygonVertex || 0;
 		this.scrollSensitivity = data.scrollSensitivity || settings.SCROLL_SENSITIVITY;
 
-		this.snapToggle = document.getElementById(settings.SNAP_BUTTON_ID);
+		this.snapButton = document.getElementById(settings.SNAP_BUTTON_ID);
 		this.triangleButton = document.getElementById(settings.MAKE_TRIANGLE_BUTTON_ID);
-		this.vertexLineToggle = document.getElementById(settings.SHOW_VERTEX_LINE_BUTTON_ID);
+		this.vertexLineButton = document.getElementById(settings.SHOW_VERTEX_LINE_BUTTON_ID);
 
 		this.snapping = false;
 		this.showVertexLine = false;
 
-		this._updateSnapping(data.snapping === null ? this.snapToggle.classList.contains("active") : data.snapping);
-		this._updateShowVertexLine(data.showVertexLine === null ? this.vertexLineToggle.classList.contains("active") : data.showVertexLine);
+		this._updateSnapping(data.snapping === null ? this.snapButton.classList.contains("active") : data.snapping);
+		this._updateVertexLine(data.showVertexLine === null ? this.vertexLineButton.classList.contains("active") : data.showVertexLine);
 
 		const cameraData = data.camera || {};
 		const cameraPos = cameraData.position || settings.INITIAL_CAMERA_POSITION;

@@ -1,4 +1,5 @@
 
+import datetime
 import json
 
 from pydantic import BaseModel
@@ -15,7 +16,7 @@ from sqlmodel import SQLModel, Session, create_engine, select
 import bcrypt
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
-from models import Drawing, User
+from models import Drawing, User, get_utctime
 
 SECRET_KEY = "ASFQEUBFOEUQB)!#H) #) UR)(*#!U&R) &)*#!&UR) &$#!)_( &$#)"
 serializer = URLSafeTimedSerializer(SECRET_KEY)
@@ -202,6 +203,39 @@ async def save_drawing(request: Request, session: str | None = Cookie(default=No
 
 	return HTMLResponse("OK")
 
+# Update drawing endpoint
+@app.put("/drawings/{drawing_id}")
+async def update_drawing(drawing_id: int, request: Request, session: str | None = Cookie(default=None)):
+
+	username = decode_token(session) if session else None
+
+	if username is None:
+		raise HTTPException(status_code=401, detail="Unauthorized")
+
+	data_json = await request.body()
+
+	with Session(engine) as db:
+
+		user = db.exec(select(User).where(User.username == username)).first()
+
+		if not user:
+			return HTMLResponse("User not found", status_code=404)
+
+		drawing = db.exec(select(Drawing).where(Drawing.id == drawing_id, Drawing.user_id == user.id)).first()
+
+		if not drawing:
+			return HTMLResponse("Drawing not found", status_code=404)
+
+		drawing.data = data_json.decode()
+
+		# Update last modified time
+		drawing.modified_at = get_utctime()
+
+		db.add(drawing)
+		db.commit()
+
+	return HTMLResponse("OK")
+
 @app.get("/drawings", response_class=HTMLResponse)
 async def get_drawings(request: Request, session: str | None = Cookie(default=None)):
 
@@ -211,13 +245,27 @@ async def get_drawings(request: Request, session: str | None = Cookie(default=No
 		return HTMLResponse("Unauthorized", status_code=401)
 
 	with Session(engine) as db:
+
 		user = db.exec(select(User).where(User.username == username)).first()
+
 		if not user:
 			return HTMLResponse("User not found", status_code=404)
 
 		drawings = []
+
 		for d in user.drawings:
-			data = json.loads(d.data)
+
+			try:
+				data = json.loads(d.data)
+			except json.JSONDecodeError:
+
+				print(f"Error decoding drawing data for drawing id {d.id}, deleting...")
+
+				db.delete(d)
+				db.commit()
+
+				continue
+
 			drawings.append({
 				"id": d.id,
 				"drawing_name": data.get("drawingName", "Untitled Drawing"),

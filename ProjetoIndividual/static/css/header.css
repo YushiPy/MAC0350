@@ -41,11 +41,129 @@
 	align-items: center;
 }
 
+.save-buttons {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	position: relative;
+}
+
+.visible-save-options {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
 .save-button {
-	--bg: var(--accent-color);
+
+	background-color: var(--accent-color);
 
 	padding-left: 15px;
 	padding-right: 15px;
+
+	border-radius: 0px;
+	border-bottom-left-radius: 5px;
+	border-top-left-radius: 5px;
+	border: 1px solid var(--text-color);
+}
+
+.save-button:hover {
+	background-color: color-mix(in srgb, var(--accent-color) 80%, var(--header-color));
+}
+
+.save-button:active {
+	background-color: color-mix(in srgb, var(--accent-color) 60%, var(--header-color));
+}
+
+.save-options-button {
+	--bg: var(--accent-color);
+	height: 32px;
+	padding: 0;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding-left: 5px;
+	padding-right: 5px;
+
+	border-radius: 0px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+
+	border: 1px solid var(--text-color);
+	border-left: none;
+}
+
+.save-options-button:hover {
+	background-color: color-mix(in srgb, var(--accent-color) 80%, var(--header-color));
+}
+
+.save-options-button:active {
+	background-color: color-mix(in srgb, var(--accent-color) 60%, var(--header-color));
+}
+
+.down-arrow-svg-save {
+
+	height: 20px;
+	padding: 0;
+
+	color: var(--text-color);
+	stroke: var(--text-color);
+	fill: var(--text-color);
+}
+
+.save-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+}
+
+.rename-button, .duplicate-button {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	width: 100%;
+	justify-content: space-between;
+	background-color: var(--text-color);
+
+	border: none;
+	border-radius: 0px;
+}
+
+.rename-button:hover, .duplicate-button:hover {
+	background-color: color-mix(in srgb, var(--header-color) 10%, var(--text-color));
+}
+
+.rename-button:active, .duplicate-button:active {
+	background-color: color-mix(in srgb, var(--header-color) 20%, var(--text-color));
+}
+
+.rename-button {
+	color: var(--accent-color);
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+
+.duplicate-button {
+	color: var(--header-color);
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+.pencil-svg, .duplicate-svg {
+	width: 20px;
+	height: 20px;
+	stroke: var(--text-color);
+	fill: transparent;
+	margin-right: 10px;
+}
+
+.pencil-svg {
+	stroke: var(--accent-color);
 }
 
 .folder-button, .save-button {
@@ -81,8 +199,8 @@
 .down-arrow-svg {
 	width: 20px;
 	height: 20px;
-	stroke: var(--header-text-color);
-	fill: var(--header-text-color);
+	stroke: var(--text-color);
+	fill: var(--text-color);
 	margin-left: 6px;
 }
 

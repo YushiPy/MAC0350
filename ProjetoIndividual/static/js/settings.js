@@ -61,6 +61,15 @@ export const OVERLAY_ELEMENTS_ID = [
 	"saved-drawings-overlay",
 	"save-drawing-overlay",
 	"user-login-section-outer",
+	"save-prompt",
+	"rename-prompt",
+	"duplicate-prompt",
 ];
 
+export const BLOCK_CLICK_IDS = [
+	"dropdown-content",
+	"save-dropdown-menu",
+]
+
 export const SAVE_DRAWING_ENDPOINT_URL = "/drawings/save";
+export const UPDATE_DRAWING_ENDPOINT_URL = "/drawings";
