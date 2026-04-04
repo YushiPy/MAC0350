@@ -3,13 +3,12 @@
 <div class="drawings-overlay">
 	<div class="drawings-panel">
 		<div class="drawings-header">
-			<span>
-				Saved Drawings
-			</span>
-			<button id="new-drawing-button" onclick="newDrawing();">
-				New Drawing
-			</button>
+			<span>Saved Drawings</span>
+			<button id="new-drawing-button" onclick="newDrawing();">New Drawing</button>
 		</div>
+		
+		<input id="drawings-search" type="text" placeholder="Search drawings..." oninput="filterDrawings(this.value)">
+
 		<div class="drawings-grid">
 			{% for drawing in drawings %}
 			<div class="drawing-card" onclick="loadDrawing({{ drawing.id }})">
@@ -80,6 +79,18 @@
 				console.error("Error loading drawing:", error);
 				alert("An error occurred while loading the drawing.");
 			});
+	}
+
+	function filterDrawings(query) {
+		const q = query.toLowerCase();
+		document.querySelectorAll(".drawing-card").forEach(card => {
+			const title = card.querySelector(".drawing-title").textContent.toLowerCase();
+			card.style.display = title.includes(q) ? "" : "none";
+		});
+
+		const visible = document.querySelectorAll(".drawing-card:not([style*='display: none'])").length;
+		const noDrawings = document.querySelector(".no-drawings");
+		if (noDrawings) noDrawings.style.display = visible === 0 ? "" : "none";
 	}
 
 	function newDrawing() {

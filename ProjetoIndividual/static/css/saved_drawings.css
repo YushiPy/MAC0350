@@ -60,6 +60,15 @@
 	background-color: color-mix(in srgb, var(--accent-color) 70%, black);
 }
 
+.drawings-panel input {
+	padding: 8px;
+	border: 1px solid var(--accent-color);
+	border-radius: 4px;
+	font-size: 16px;
+	color: var(--text-color);
+	margin-bottom: 16px;
+}
+
 
 .drawings-grid {
 	display: grid;
