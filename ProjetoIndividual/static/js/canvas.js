@@ -238,28 +238,6 @@ class Camera {
 class Scene {
 
 	constructor(data = null) {
-
-		if (!data) {
-			
-			data = {
-				startPoint: settings.INITIAL_START_POINT,
-				targetPoint: settings.INITIAL_TARGET_POINT,
-				polygons: settings.INITIAL_POLYGONS,
-
-				currentPolygon: 0,
-				currentPolygonVertex: 0,
-				scrollSensitivity: settings.SCROLL_SENSITIVITY,
-
-				snapping: null,
-				showVertexLine: null,
-
-				camera: {
-					position: settings.INITIAL_CAMERA_POSITION,
-					unitsToPixels: settings.INITIAL_UNITS_TO_PIXELS,
-				},
-			};
-		}
-
 		this.loadFromData(data);
 	}
 
@@ -878,6 +856,10 @@ class Scene {
 
 	// --- Save and load ---
 
+	clear() {
+		this.loadFromData(null);
+	}
+
 	saveData(drawingName) {
 
 		const dataURL = scene.canvas.canvas.toDataURL("image/png");
@@ -932,6 +914,24 @@ class Scene {
 	}
 
 	loadFromData(data) {
+
+		data = data || {
+			startPoint: settings.INITIAL_START_POINT,
+			targetPoint: settings.INITIAL_TARGET_POINT,
+			polygons: settings.INITIAL_POLYGONS,
+
+			currentPolygon: 0,
+			currentPolygonVertex: 0,
+			scrollSensitivity: settings.SCROLL_SENSITIVITY,
+
+			snapping: null,
+			showVertexLine: null,
+
+			camera: {
+				position: settings.INITIAL_CAMERA_POSITION,
+				unitsToPixels: settings.INITIAL_UNITS_TO_PIXELS,
+			},
+		};
 		
 		this.startPoint = new Vector2(data.startPoint);
 		this.targetPoint = new Vector2(data.targetPoint);

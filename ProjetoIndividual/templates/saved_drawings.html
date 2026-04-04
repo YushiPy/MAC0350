@@ -2,7 +2,14 @@
 
 <div class="drawings-overlay">
 	<div class="drawings-panel">
-		<h2>Saved Drawings</h2>
+		<div class="drawings-header">
+			<span>
+				Saved Drawings
+			</span>
+			<button id="new-drawing-button" onclick="newDrawing();">
+				New Drawing
+			</button>
+		</div>
 		<div class="drawings-grid">
 			{% for drawing in drawings %}
 			<div class="drawing-card" onclick="loadDrawing({{ drawing.id }})">
@@ -73,5 +80,15 @@
 				console.error("Error loading drawing:", error);
 				alert("An error occurred while loading the drawing.");
 			});
+	}
+
+	function newDrawing() {
+		
+		const scene = window.scene;
+		scene.clear();
+
+		document.getElementById('saved-drawings-overlay').innerHTML = '';
+
+		setSavedDrawing(null, null);
 	}
 </script>
