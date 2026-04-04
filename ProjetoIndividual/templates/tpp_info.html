@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+		<link rel="stylesheet" href="{{ static}}/css/tpp_info.css">
+
+	</head>
+	<body>
+
+		<h1>The Touring Polygons Problem</h1>
+
+		<p>
+			The Touring Polygons Problem (TPP) is a computational problem that involves finding the shortest path that starts at <code>s</code>, visits a sequence of polygons <code>P_1, ..., P_k</code> in a specified order, and ends at <code>t</code>. The path must intersect each polygon in the sequence at least once. 
+		</p>
+
+		<p>
+			This problem is a specific case of the more general Traveling Salesman Problem with Neighborhoods (TSPN), where the "neighborhoods" are represented by the polygons and the visit order is fixed. The TPP can be shown to be NP-hard if the polygons are allowed to be arbitrary, however, when restricted to convex polygons, the problem can be solved in polynomial time.
+		</p>
+
+		<p>
+			This problem has applications in various fields such as robotics, where a robot may need to navigate through a series of areas (represented by polygons) in a specific order, and in logistics, where a delivery route must be planned to visit certain locations (represented by polygons) in a specific sequence.
+		</p>
+
+		<p>
+			This visualizer allows users to move the points <code>s</code> and <code>t</code>, as well as the vertices of the polygons, to see how the shortest path changes in real-time. It provides an interactive way to understand the TPP and its properties.
+		</p>
+
+	</body>
+</html>

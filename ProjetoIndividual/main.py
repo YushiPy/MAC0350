@@ -297,3 +297,8 @@ async def get_drawing(request: Request, drawing_id: int, session: str | None = C
 
 	data = json.loads(drawing.data)
 	return JSONResponse(data)
+
+@app.get("/tpp-info", response_class=HTMLResponse)
+async def get_info(request: Request):
+	return templates.TemplateResponse("tpp_info.html", {"request": request, "static": STATIC_PATH})
+
