@@ -167,13 +167,13 @@
 
 	function setSavedDrawing(id, name) {
 
-		drawingName = name || "Untitled Drawing";
+		drawingName = name;
 		drawingId = id;	
 
 		const span = document.getElementById("drawing-name-text");
 
 		if (span) {
-			span.textContent = drawingName;
+			span.textContent = drawingName || "Untitled Drawing";
 		}
 
 		const saveOptionsButton = document.getElementById("save-options-button");

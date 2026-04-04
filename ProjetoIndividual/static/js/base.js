@@ -25,22 +25,27 @@ function enableSmartNavigation(form) {
 		}
 	}
 
-	inputs.forEach((input, index) => {
-		input.addEventListener("keydown", (event) => {
+	function handleKeyDown(event) {
 
-			const shift = getShift(event);
-			const newIndex = index + shift;
+		const shift = getShift(event);
+		const newIndex = inputs.indexOf(event.target) + shift;
 
-			if (shift !== 0) {
+		if (shift !== 0) {
 
-				event.preventDefault();
-				shiftFocus(newIndex);
+			event.preventDefault();
+			shiftFocus(newIndex);
 
-				if (event.key === "Enter" && !event.shiftKey && newIndex === inputs.length) {
-					submitButton.click();
-				}
+			if (event.key === "Enter" && !event.shiftKey && newIndex === inputs.length) {
+				submitButton.click();
 			}
-		})
+		}
+	}
+
+	inputs.forEach(input => {
+		if (!input.hasAttribute("data-smart-nav")) {
+			input.addEventListener("keydown", handleKeyDown);
+			input.setAttribute("data-smart-nav", "true");
+		}
 	})
 }
 
