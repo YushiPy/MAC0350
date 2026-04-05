@@ -1,3 +1,4 @@
+---
 
 # MAC0350 - Introdução ao Desenvolvimento de Sistemas de Software (2026)
 
@@ -78,6 +79,24 @@ Polígonos não-convexos ainda não são suportados. A abordagem planejada é ca
 └── tpp.db                   # Banco de dados SQLite (criado na primeira execução)
 ```
 
+### Como Executar Localmente
+
+**Requisitos:** Python 3.10+
+
+```bash
+# Clone o repositório
+git clone https://github.com/YushiPy/TouringPolygons
+cd TouringPolygons/ProjetoIndividual
+
+# Instale as dependências
+pip install -r requirements.txt
+
+# Inicie o servidor
+uvicorn main:app --reload
+```
+
+Então abra `http://localhost:8000` no navegador.
+
 ### Limitações Conhecidas
 
 - Polígonos intersectantes não são suportados — a solução pode ser incorreta se os polígonos se sobrepuserem
@@ -95,4 +114,10 @@ Polígonos não-convexos ainda não são suportados. A abordagem planejada é ca
 
 ## Tarefas de Classe e de Casa
 
-A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organizadas por aula, como apresentado em `https://webdev2025.lol`. Toda tarefa de classe ou de casa está em uma pasta nomeada de acordo com a aula correspondente no formato `AulaX-Y` onde `X` é o número da aula e `Y` é `Sala` para tarefas de classe ou `Casa` para tarefas de casa. 
+A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organizadas por aula, como apresentado em `https://webdev2025.lol`. Toda tarefa de classe ou de casa está em uma pasta nomeada de acordo com a aula correspondente no formato `AulaX-Y` onde `X` é o número da aula e `Y` é `Sala` para tarefas de classe ou `Casa` para tarefas de casa.
+
+---
+
+## Nota sobre uso de IA
+
+IA foi utilizada de forma pontual na escrita deste README e na página de descrição do TPP — essencialmente nas partes puramente textuais, não sendo utilizado para criação de código, o uso se limitou à parte de escrever texto corrido.
