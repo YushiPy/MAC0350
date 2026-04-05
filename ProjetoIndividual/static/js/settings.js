@@ -24,10 +24,11 @@ export const POLYGON_COLORS = [
 	"#FF00FF"
 ]
 
+export const POLYGON_INSIDE_ALPHA = 0.25;
+
 export const SOLUTION_COLOR = "#DC9D2F";
 
 export const BACKGROUND_COLOR = "#121212";
-
 export const POINT_RADIUS = 8;
 
 export const MAIN_AXIS_COLOR = "#E0E0E0";

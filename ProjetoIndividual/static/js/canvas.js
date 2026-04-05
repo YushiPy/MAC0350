@@ -173,8 +173,9 @@ class Canvas {
 
 class Polygon {
 
-	constructor(points) {
+	constructor(points, color) {
 		this.points = points.map(p => new Vector2(p));
+		this.color = color;
 	}
 
 	*[Symbol.iterator]() {
@@ -481,7 +482,7 @@ class Scene {
 		for (let i = 0; i < this.polygons.length; i++) {
 			
 			const poly = this.polygons[i];
-			const color = settings.POLYGON_COLORS[i % settings.POLYGON_COLORS.length];
+			const color = poly.color || settings.POLYGON_COLORS[i % settings.POLYGON_COLORS.length];
 			const isSelected = this.currentPolygon % this.polygons.length === i;
 
 			for (const vertex of poly.points) {
@@ -501,7 +502,8 @@ class Scene {
 				ctx.fillText("NOT CONVEX", cp.x, cp.y);
 			}
 
-			this.canvas.drawPolygon(poly.points, color, 2, isSelected, 0, 0.25);
+			const alpha = settings.POLYGON_INSIDE_ALPHA;
+			this.canvas.drawPolygon(poly.points, color, 2, isSelected, 0, alpha);
 			// this.canvas.drawPolygon(poly.points, settings.MAIN_AXIS_COLOR, settings.GRID_WIDTH, false, 8, 0);
 		}
 	}
@@ -558,6 +560,11 @@ class Scene {
 	}
 
 	draw() {
+
+		// Fill background
+		this.canvas.ctx.fillStyle = settings.BACKGROUND_COLOR;
+		this.canvas.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
 		this.canvas.clear();
 		this.drawGrid();
 		this.drawSolution();
@@ -673,7 +680,9 @@ class Scene {
 			return new Vector2(Math.cos(angle), Math.sin(angle)).mul(radius).add(center);
 		});
 
-		this.polygons.push(new Polygon(points));
+		const color = settings.POLYGON_COLORS[this.polygons.length % settings.POLYGON_COLORS.length];
+
+		this.polygons.push(new Polygon(points, color));
 		this.currentPolygon = this.polygons.length - 1;
 	}
 
@@ -869,6 +878,7 @@ class Scene {
 			startPoint: [this.startPoint.x, this.startPoint.y],
 			targetPoint: [this.targetPoint.x, this.targetPoint.y],
 			polygons: this.polygons.map(poly => poly.points.map(p => [p.x, p.y])),
+			polygonColors: this.polygons.map(poly => poly.color),
 
 			currentPolygon: this.currentPolygon,
 			currentPolygonVertex: this.currentPolygonVertex,
@@ -922,6 +932,7 @@ class Scene {
 			startPoint: settings.INITIAL_START_POINT,
 			targetPoint: settings.INITIAL_TARGET_POINT,
 			polygons: settings.INITIAL_POLYGONS,
+			polygonColors: settings.POLYGON_COLORS,
 
 			currentPolygon: 0,
 			currentPolygonVertex: 0,
@@ -938,7 +949,9 @@ class Scene {
 		
 		this.startPoint = new Vector2(data.startPoint);
 		this.targetPoint = new Vector2(data.targetPoint);
-		this.polygons = data.polygons.map(poly => new Polygon(poly));
+		
+		const colors = data.polygonColors || settings.POLYGON_COLORS;
+		this.polygons = data.polygons.map((poly, i) => new Polygon(poly, colors[i % colors.length]));
 
 		this.currentPolygon = data.currentPolygon || 0;
 		this.currentPolygonVertex = data.currentPolygonVertex || 0;
