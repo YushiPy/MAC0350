@@ -5,28 +5,94 @@ Nesse repositório, você encontrará o código-fonte e os arquivos relacionados
 
 ## Projeto Individual
 
-O Problema de Visita de Polígonos (Touring Polygons Problem - TPP) é um problema de otimização que envolve encontrar o caminho mais curto que parte de um ponto inicial, visita uma sequência de polígonos e chega a um ponto final. Resolver esse problema é o tema central da minha iniciação científica, o repositório principal com todas as soluções, experimentos e relatórios pode ser encontrado [aqui](https://github.com/YushiPy/TouringPolygons). 
+O Problema de Visita de Polígonos (Touring Polygons Problem - TPP) é um problema de otimização que envolve encontrar o caminho mais curto que parte de um ponto inicial $s$, visita uma sequência de polígonos convexos $P_1, P_2, \ldots, P_k$ em ordem, e chega a um ponto final $t$. Resolver esse problema é o tema central da minha iniciação científica, o repositório principal com todas as soluções, experimentos e relatórios pode ser encontrado [aqui](https://github.com/YushiPy/TouringPolygons).
 
 Como projeto individual de `MAC0350 - Introdução ao Desenvolvimento de Sistemas de Software (2026)`, buscamos criar uma aplicação web que permita aos usuários visualizar o processo de resolução do TPP, mostrando os polígonos, o caminho encontrado e as etapas intermediárias.
 
-A proposta é que a página web seja similar à plataforma [Desmos](https://www.desmos.com/calculator), onde os usuários possam interagir com os elementos do problema, como os polígonos e pontos de início e fim, e visualizar o caminho encontrado pelo algoritmo de resolução do TPP. Além disso, buscamos mostrar o processo de resolução, permitindo que os usuários vejam as etapas intermediárias do algoritmo, como a construção do mapa de último passo e região de primeiro contato. 
+A proposta é que a página web seja similar à plataforma [Desmos](https://www.desmos.com/calculator), onde os usuários possam interagir com os elementos do problema, como os polígonos e pontos de início e fim, e visualizar o caminho encontrado pelo algoritmo de resolução do TPP. Além disso, buscamos mostrar o processo de resolução, permitindo que os usuários vejam as etapas intermediárias do algoritmo, como a construção do mapa de último passo e região de primeiro contato.
 
 Esse projeto contempla diversos aspectos da disciplina, sendo necessário aplicar o que aprendemos sobre HTML e CSS para criar uma interface visualmente atraente e funcional, além de utilizar JavaScript para implementar a lógica de interação e visualização do processo de resolução do TPP. Não só, buscamos permitir que o usuário possa salvar e carregar suas próprias instâncias do problema quando estiver logado, o que envolve a implementação de funcionalidades de backend para gerenciar os dados dos usuários e suas instâncias do TPP.
 
-Os arquivos relacionados ao projeto individual estão organizados na pasta `ProjetoIndividual`, onde você encontrará o código-fonte da aplicação web, os arquivos de configuração e os recursos utilizados para a visualização do TPP.
+### O Problema
+
+Formalmente, dado um ponto inicial $s$, um ponto final $t$ e uma sequência ordenada de polígonos convexos $P_1, P_2, \ldots, P_k$, o objetivo é encontrar o caminho mais curto que:
+- parte de $s$,
+- visita cada polígono em ordem (tocando ou cruzando cada um pelo menos uma vez),
+- termina em $t$.
+
+O TPP é um caso especial do **Problema do Caixeiro Viajante com Vizinhanças (TSPN)**, que por sua vez é uma generalização do TSP clássico. Ao contrário do TSPN geral, o TPP fixa a ordem de visita e restringe as vizinhanças a polígonos convexos — restrições que tornam o problema solúvel em tempo polinomial.
+
+Para **polígonos não-convexos**, Dror et al. provaram que o problema é NP-difícil.
+
+### Algoritmos
+
+Os principais algoritmos implementados são:
+
+| Artigo | Caso | Complexidade |
+|---|---|---|
+| Dror et al. (2003) | Polígonos não-intersectantes | $O(kn \log(n/k))$ |
+| Dror et al. (2003) | Polígonos intersectantes | $O(k^2 n \log(n/k))$ |
+| Tan & Jiang (2017) | Polígonos não-intersectantes | $O(kn)$ |
+
+onde $k$ é o número de polígonos e $n$ é o número total de vértices.
+
+O visualizador utiliza o algoritmo de **Dror et al.**, por ser mais direto de implementar. A melhoria de Tan & Jiang (que remove o fator logarítmico) está planejada para uma atualização futura.
+
+> **Nota:** O caso de polígonos intersectantes ainda não está implementado. A solução pode ser incorreta se os polígonos se sobrepuserem.
+
+### Polígonos Não-Convexos
+
+Polígonos não-convexos ainda não são suportados. A abordagem planejada é calcular uma partição convexa ou cobertura convexa de cada polígono não-convexo e então aplicar uma busca branch-and-bound sobre as peças convexas resultantes. O canvas exibe um aviso `NOT CONVEX` e suprime a solução enquanto houver polígonos não-convexos.
+
+### Funcionalidades
+
+- Computação e renderização em tempo real do caminho mais curto
+- Arrastar pontos, vértices e polígonos inteiros
+- Adicionar e remover polígonos e vértices
+- Seleção múltipla de pontos com retângulos de seleção aditivos
+- Encaixe em interseções de subgrade
+- Linhas de pré-visualização de vértice mostrando a posição de inserção antes do clique
+- Contas de usuário com salvar, carregar, renomear, duplicar e excluir configurações
+- Painel de desenhos com busca
+
+### Tecnologias Utilizadas
+
+- **Backend:** Python, FastAPI, SQLModel, SQLite
+- **Frontend:** JavaScript puro, templates Jinja2, HTMX
+- **Autenticação:** hash de senhas com bcrypt, cookies de sessão assinados via `itsdangerous`
+
+### Estrutura do Projeto
+
+```
+├── main.py                  # Aplicação FastAPI e rotas
+├── models.py                # Modelos de banco de dados SQLModel
+├── static/
+│   ├── css/
+│   └── js/
+│       ├── canvas.js        # Cena, renderização e tratamento de entrada
+│       ├── utpp.js          # Implementação do solver do TPP
+│       ├── vector2.js       # Matemática vetorial 2D
+│       ├── settings.js      # Constantes globais
+│       └── base.js          # Utilitários de UI compartilhados
+├── templates/               # Templates HTML Jinja2
+└── tpp.db                   # Banco de dados SQLite (criado na primeira execução)
+```
+
+### Limitações Conhecidas
+
+- Polígonos intersectantes não são suportados — a solução pode ser incorreta se os polígonos se sobrepuserem
+- Polígonos não-convexos suprimem a solução completamente
+- Sem desfazer/refazer
+- A ordem de visita dos polígonos é fixada na criação e não pode ser reordenada
+
+### Referências
+
+**Dror, M., Efrat, A., Lubiw, A., and Mitchell, J. S. B.** (2003). Touring a sequence of polygons. In *Proceedings of the 35th Annual ACM Symposium on Theory of Computing (STOC '03)*, pp. 473–482. https://doi.org/10.1145/780542.780612
+
+**Tan, X. and Jiang, B.** (2017). Efficient algorithms for touring a sequence of convex polygons and related problems. In *Theory and Applications of Models of Computation — TAMC 2017*, Lecture Notes in Computer Science, vol. 10185, pp. 614–625. Springer. https://doi.org/10.1007/978-3-319-55911-7_44
+
+---
 
 ## Tarefas de Classe e de Casa
 
-A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organizadas por aula, como apresentado em `https://webdev2025.lol`. Toda tarefa de classe ou de casa está em uma pasta nomeada de acordo com a aula correspondente no formato `AulaX-Y` onde `X` é o número da aula e `Y` é `Sala` para tarefas de classe ou `Casa` para tarefas de casa. Seguindo esse formato, as tarefas de classe e de casa são organizadas da seguinte maneira:
-
-- `Aula0-Sala`: Recriação da página de login do Jupiterweb. Criamos uma versão em modo escuro da página de login do Jupiterweb, utilizando técnicas modernas de HTML e CSS para garantir uma experiência visual agradável e funcional.
-
-- `Aula0-Casa`: Recriação da página pessoal do professor Routo Terada usando técnicas modernas de HTML e CSS. Condensamos as informações mais relevantes da página original, como a biografia, publicações e projetos, em um formato mais conciso e visualmente atraente. Também colocamos as imagens diretamente visíveis, evitando a necessidade de clicar cada uma das mais de 15 imagens para visualizá-las, e organizamos as informações de forma clara e acessível.
-
-- `Aula2-Sala`: Reolvemos os problemas propostos para sala, criando um botão que emite um alerta quando clicado, um botão que imprime os números pares de 1 a 10 no console, um botão que altera o texto de um elemento HTML, um botão que alterna o estado de um elemento entre "Ligado" e "Desligado", e um botão conta de 10 até 1, atualizando o número exibido a cada clique. Para implementar essas funcionalidades, utilizamos JavaScript para manipular o DOM e criar as funções necessárias para cada botão, permitindo a interação do usuário com a página de forma dinâmica.
-
-- `Aula2-Casa`: Criamos uma página web que permite o usuário trocar entre modo claro e escuro clicando em um botão. Além disso, criamos um botão que permite ao usuário dobrar um número repetidas vezes, mostrando o resultado a cada clique. Para implementar essas funcionalidades, utilizamos JavaScript para manipular o DOM e alterar as classes CSS da página, permitindo a troca entre os modos claro e escuro, bem como a atualização do número dobrado a cada clique.
-
-- `Aula3-Sala`: Resolvemos os problema propostos para sala, capturando o event `onclick` sem utilizar o atributo `onclick` diretamente no HTML. Também criamos uma lista dinâmica, cronômetro e seletor de time, utilizando JavaScript para manipular o DOM e criar as funcionalidades necessárias para cada exercício. Para capturar o evento `onclick` sem utilizar o atributo diretamente no HTML, utilizamos o método `addEventListener` em JavaScript, permitindo uma abordagem mais limpa e separada entre a estrutura HTML e a lógica de interação.
-
-- `Aula4-Sala`: Usamos FAST API para permitir que o usuário se comunique com o backend.
+A pasta `Tarefas` contém as resoluções das tarefas de classe e de casa, organizadas por aula, como apresentado em `https://webdev2025.lol`. Toda tarefa de classe ou de casa está em uma pasta nomeada de acordo com a aula correspondente no formato `AulaX-Y` onde `X` é o número da aula e `Y` é `Sala` para tarefas de classe ou `Casa` para tarefas de casa. 
