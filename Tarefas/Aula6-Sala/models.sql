@@ -1,17 +1,54 @@
 
-CREATE TABLE user (
-	id INTEGER PRIMARY KEY AUTO_INCREMENT,
-	username TEXT NOT NULL UNIQUE,
-	password_hash TEXT NOT NULL
+CREATE TABLE entregador (
+	entregador_id INTEGER PRIMARY KEY,
+	nome TEXT NOT NULL,
+	contato TEXT NOT NULL
 );
 
-CREATE INDEX ix_user_username ON user (username);
+CREATE TABLE endereco (
+	endereco_id INTEGER PRIMARY KEY,
+	rua TEXT NOT NULL,
+	numero TEXT NOT NULL,
+	bairro TEXT NOT NULL,
+	cidade TEXT NOT NULL,
+	cep TEXT NOT NULL
+);
 
-CREATE TABLE drawing (
-	id INTEGER PRIMARY KEY AUTO_INCREMENT,
-	user_id INTEGER NOT NULL,
-	data TEXT NOT NULL,
-	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	modified_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (user_id) REFERENCES user(id)
+CREATE TABLE cliente (
+	cliente_id INTEGER PRIMARY KEY,
+	nome TEXT NOT NULL,
+	contato TEXT NOT NULL,
+	endereco_id INTEGER NOT NULL,
+	FOREIGN KEY (endereco_id) REFERENCES endereco(endereco_id)
+);
+
+CREATE TABLE vendedor (
+	vendedor_id INTEGER PRIMARY KEY,
+	nome TEXT NOT NULL,
+	contato TEXT NOT NULL
+);
+
+CREATE TABLE fabricante (
+	fabricante_id INTEGER PRIMARY KEY,
+	nome TEXT NOT NULL
+);
+
+CREATE TABLE produto (
+	produto_id INTEGER PRIMARY KEY,
+	nome TEXT NOT NULL,
+	fabricante_id INTEGER NOT NULL,
+	FOREIGN KEY (fabricante_id) REFERENCES fabricante(fabricante_id)
+);
+
+CREATE TABLE pedido (
+	pedido_id INTEGER PRIMARY KEY,
+	status_entrega TEXT NOT NULL,
+	entregador_id INTEGER NOT NULL,
+	cliente_id INTEGER NOT NULL,
+	vendedor_id INTEGER NOT NULL,
+	produto_id INTEGER NOT NULL,
+	FOREIGN KEY (entregador_id) REFERENCES entregador(entregador_id),
+	FOREIGN KEY (cliente_id) REFERENCES cliente(cliente_id),
+	FOREIGN KEY (vendedor_id) REFERENCES vendedor(vendedor_id),
+	FOREIGN KEY (produto_id) REFERENCES produto(produto_id)
 );
