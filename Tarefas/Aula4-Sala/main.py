@@ -1,19 +1,21 @@
-
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 app = FastAPI()
 
+
 class User(BaseModel):
-	nome: str
-	idade: int
+    nome: str
+    idade: int
+
 
 USERS: list[User] = []
 
+
 @app.get("/", response_class=HTMLResponse)
 async def get_main_page() -> str:
-	return """<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -176,22 +178,25 @@ async def get_main_page() -> str:
 </body>
 </html>"""
 
+
 @app.post("/users")
 async def create_user(user: User) -> User:
-	USERS.append(user)
-	return user
+    USERS.append(user)
+    return user
+
 
 @app.get("/users")
 async def get_users(index: int | None = None) -> User | list[User]:
-	
-	if index is not None:
-		if 0 <= index < len(USERS):
-			return USERS[index]
-		else:
-			raise HTTPException(status_code=404, detail="User not found")
 
-	return USERS
+    if index is not None:
+        if 0 <= index < len(USERS):
+            return USERS[index]
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+
+    return USERS
+
 
 @app.delete("/users")
 async def delete_users() -> None:
-	USERS.clear()
+    USERS.clear()

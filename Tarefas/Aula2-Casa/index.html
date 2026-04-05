@@ -94,18 +94,29 @@
 		}
 
 
-		#light-button.on #dark-mode-icon {opacity: 0;}
-		#light-button.on #light-mode-icon {opacity: 1;}
+		#light-button.on #dark-mode-icon {
+			opacity: 0;
+		}
 
-		#light-button:not(.on) #dark-mode-icon {opacity: 1;}
-		#light-button:not(.on) #light-mode-icon {opacity: 0;}
+		#light-button.on #light-mode-icon {
+			opacity: 1;
+		}
+
+		#light-button:not(.on) #dark-mode-icon {
+			opacity: 1;
+		}
+
+		#light-button:not(.on) #light-mode-icon {
+			opacity: 0;
+		}
 
 		#light-button-text {
 			padding-right: 2vw;
 			font-size: large;
 		}
 
-		#light-mode-icon, #dark-mode-icon {
+		#light-mode-icon,
+		#dark-mode-icon {
 			width: 2vw;
 			height: 2vw;
 			vertical-align: middle;
@@ -117,7 +128,6 @@
 		#light-mode-icon {
 			opacity: 0;
 		}
-
 	</style>
 </head>
 
@@ -125,7 +135,8 @@
 
 	<h1>Desafios para Casa: JavaScript Básico</h1>
 	<p>Utilize os conceitos vistos na aula para resolver os desafios abaixo. Você deve escrever o HTML e incluir a tag
-		<code>&lt;script&gt;</code> no próprio arquivo por enquanto.</p>
+		<code>&lt;script&gt;</code> no próprio arquivo por enquanto.
+	</p>
 
 	<div class="challenge">
 		<h3>Desafio 1: O Interruptor (Modo Claro/Escuro simples)</h3>
@@ -137,7 +148,7 @@
 			<li>Use uma condicional (<code>if</code> e <code>===</code>). Se o texto for "A luz está APAGADA", mude para
 				"A luz está ACESA". Se não, mude de volta para "A luz está APAGADA".</li>
 		</ul>
-		
+
 		<div style="display: flex; justify-content: center;">
 			<button id="light-button" onclick="alternarLuz()">
 
@@ -146,22 +157,20 @@
 				</span>
 
 				<svg class="moon-svg" fill="currentColor" viewBox="0 0 20 20" id="dark-mode-icon">
-					<path 
-						d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z">
+					<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z">
 					</path>
 				</svg>
 
 				<svg class="sun-svg" fill="currentColor" viewBox="0 0 20 20" id="light-mode-icon">
-					<path 
-						clip-rule="evenodd" 
-						d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" 
+					<path clip-rule="evenodd"
+						d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
 						fill-rule="evenodd">
 					</path>
 				</svg>
 
 			</button>
 		</div>
-	
+
 	</div>
 
 	<div class="challenge">
@@ -175,7 +184,8 @@
 			<li>Toda vez que clicar, o número deve multiplicar por 2 (ex: <code>valor = valor * 2;</code>) e atualizar a
 				tela.</li>
 			<li><strong>Extra:</strong> Usando <em>Template Literals</em>, se o valor passar de 100, exiba um alerta:
-				<code>`Cuidado, o número ${valor} está ficando muito grande!`</code></li>
+				<code>`Cuidado, o número ${valor} está ficando muito grande!`</code>
+			</li>
 		</ul>
 
 		<div style="display: flex; justify-content: center;">
@@ -203,7 +213,7 @@
 	function dobrarValor() {
 
 		valor *= 2;
-		
+
 		let button = document.querySelector("button[onclick='dobrarValor()']");
 		button.innerHTML = `Dobrar: ${valor}`;
 
@@ -213,4 +223,5 @@
 	}
 
 </script>
+
 </html>

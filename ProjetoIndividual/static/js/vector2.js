@@ -44,7 +44,7 @@ export class Vector2 {
 	isSameDirection(other) {
 		return this.cross(other) === 0 && this.dot(other) >= 0;
 	}
-	
+
 	length() {
 		return Math.sqrt(this.x ** 2 + this.y ** 2);
 	}

@@ -2,8 +2,10 @@
 
 {% extends "base.html" %}
 
-{# Adds to the <head> section of base.html. #}
-{% block head_extra %}
+{# Adds to the
+
+<head> section of base.html. #}
+	{% block head_extra %}
 	<title>Index</title>
 	<link id="page-style" rel="stylesheet" href="">
 	<style>
@@ -37,7 +39,6 @@
 			box-shadow: 0 0 8px 2px var(--text-color);
 			border: 1px solid var(--text-color);
 		}
-
 	</style>
 
 	<script>
@@ -46,23 +47,19 @@
 			e.target.classList.add("active");
 		});
 	</script>
-{% endblock %}
+	{% endblock %}
 
-{# Adds to the <body> section of base.html. #}
-{% block content %}
+	{# Adds to the
+
+<body> section of base.html. #}
+	{% block content %}
 	<nav class="top-nav">
-		<button class="nav-button"
-			hx-target="#main-content"
-			hx-get="/curtidas">
-		Curtidas</button>
-		<button class="nav-button"
-			hx-target="#main-content"
-			hx-get="/professor-page">
+		<button class="nav-button" hx-target="#main-content" hx-get="/curtidas">
+			Curtidas</button>
+		<button class="nav-button" hx-target="#main-content" hx-get="/professor-page">
 			Professor
 		</button>
-		<button class="nav-button"
-			hx-target="#main-content"
-			hx-get="/jupiterweb">
+		<button class="nav-button" hx-target="#main-content" hx-get="/jupiterweb">
 			JupiterWeb
 		</button>
 	</nav>
@@ -72,4 +69,4 @@
 		<p>Use a barra de navegação para acessar as diferentes páginas.</p>
 	</main>
 
-{% endblock content %}
+	{% endblock content %}

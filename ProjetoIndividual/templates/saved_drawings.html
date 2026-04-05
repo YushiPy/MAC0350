@@ -38,15 +38,22 @@
 	</div>
 
 </div>
-<div id="delete-modal" style="display:none; position:fixed; inset:0; z-index:1000; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
-    <div style="background:var(--header-color); border-radius:12px; padding:24px 28px; max-width:320px; width:90%; border:0.5px solid rgba(255,255,255,0.1);">
-        <p style="font-size:15px; color:var(--text-highlight-color); margin:0 0 6px; font-weight:500; font-family:var(--font-family);">Delete drawing?</p>
-        <p style="font-size:13px; color:var(--text-color); margin:0 0 20px; font-family:var(--font-family);">This cannot be undone.</p>
-        <div style="display:flex; gap:8px; justify-content:flex-end;">
-            <button id="delete-cancel" style="padding:7px 16px; border-radius:7px; border:0.5px solid rgba(255,255,255,0.15); background:transparent; color:var(--text-color); font-size:13px; font-family:var(--font-family); cursor:pointer;">Cancel</button>
-            <button id="delete-confirm" style="padding:7px 16px; border-radius:7px; border:none; background:var(--accent-color); color:#fff; font-size:13px; font-family:var(--font-family); cursor:pointer;">Delete</button>
-        </div>
-    </div>
+<div id="delete-modal"
+	style="display:none; position:fixed; inset:0; z-index:1000; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+	<div
+		style="background:var(--header-color); border-radius:12px; padding:24px 28px; max-width:320px; width:90%; border:0.5px solid rgba(255,255,255,0.1);">
+		<p
+			style="font-size:15px; color:var(--text-highlight-color); margin:0 0 6px; font-weight:500; font-family:var(--font-family);">
+			Delete drawing?</p>
+		<p style="font-size:13px; color:var(--text-color); margin:0 0 20px; font-family:var(--font-family);">This cannot
+			be undone.</p>
+		<div style="display:flex; gap:8px; justify-content:flex-end;">
+			<button id="delete-cancel"
+				style="padding:7px 16px; border-radius:7px; border:0.5px solid rgba(255,255,255,0.15); background:transparent; color:var(--text-color); font-size:13px; font-family:var(--font-family); cursor:pointer;">Cancel</button>
+			<button id="delete-confirm"
+				style="padding:7px 16px; border-radius:7px; border:none; background:var(--accent-color); color:#fff; font-size:13px; font-family:var(--font-family); cursor:pointer;">Delete</button>
+		</div>
+	</div>
 </div>
 
 <script>
@@ -146,16 +153,16 @@
 			cleanup();
 
 			fetch(`/drawings/${drawingId}`, { method: "DELETE" })
-    .then(response => {
-        if (!response.ok) throw new Error();
-        const card = document.querySelector(`.drawing-card[data-id="${drawingId}"]`);
-        if (card) card.remove();
+				.then(response => {
+					if (!response.ok) throw new Error();
+					const card = document.querySelector(`.drawing-card[data-id="${drawingId}"]`);
+					if (card) card.remove();
 
-        const remaining = document.querySelectorAll(".drawing-card").length;
-        const noDrawings = document.querySelector(".no-drawings");
-        if (noDrawings) noDrawings.style.display = remaining === 0 ? "" : "none";
-    })
-    .catch(() => alert("An error occurred while deleting the drawing."));
+					const remaining = document.querySelectorAll(".drawing-card").length;
+					const noDrawings = document.querySelector(".no-drawings");
+					if (noDrawings) noDrawings.style.display = remaining === 0 ? "" : "none";
+				})
+				.catch(() => alert("An error occurred while deleting the drawing."));
 		});
 
 		modal.addEventListener('click', e => {

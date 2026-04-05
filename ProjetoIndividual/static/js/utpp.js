@@ -70,7 +70,7 @@ function pointInEdge2(point, vertex1, vertex2, ray1, ray2) {
 
 	const p1 = point.sub(vertex1);
 	const p2 = point.sub(vertex2);
-	
+
 	const rp1 = ray1.cross(p1) >= 0;
 	const rp2 = ray2.cross(p2) <= 0;
 	const dp = dv.cross(p1) <= 0;
@@ -179,7 +179,7 @@ export function tppSolve(start, target, polygons, simplify = false) {
 
 			const v = polygon[j];
 			const [ray1, ray2] = getCone(i, j);
-			
+
 			if (!firstContact[i][j] && !firstContact[i][(j - 1 + polygon.length) % polygon.length]) {
 				continue;
 			}
@@ -196,7 +196,7 @@ export function tppSolve(start, target, polygons, simplify = false) {
 
 			const ray1 = getCone(i, j)[1];
 			const ray2 = getCone(i, (j + 1) % polygon.length)[0];
-			
+
 			if (pointInEdge(point, v1, ray1, v2, ray2)) {
 				return firstContact[i][j] ? 2 * j + 1 : -1;
 			}
@@ -227,7 +227,7 @@ export function tppSolve(start, target, polygons, simplify = false) {
 
 		let left = 0;
 		let right = polygon.length - 1;
-				
+
 		if (checkVertex(0)) {
 			return 0;
 		}
@@ -239,7 +239,7 @@ export function tppSolve(start, target, polygons, simplify = false) {
 			if (checkVertex(mid + 1)) {
 				return 2 * (mid + 1);
 			}
-			
+
 			if (checkEdge(left, mid)) {
 				right = mid;
 			} else {
@@ -255,11 +255,11 @@ export function tppSolve(start, target, polygons, simplify = false) {
 	}
 
 	function locatePoint(point, i) {
-	
+
 		if (polygons[i].length < BINARY_SEACH_THRESHOLD) {
 			return locatePointLinearSearch(point, i);
 		}
-		
+
 		const location = locatePointBinarySearch(point, i);
 		const visible = firstContact[i];
 
@@ -275,10 +275,10 @@ export function tppSolve(start, target, polygons, simplify = false) {
 		if (i === 0) {
 			return [start, point];
 		}
-		
+
 		const polygon = polygons[i - 1];
 		const location = locatePoint(point, i - 1);
-		
+
 		if (location === -1) {
 			return queryFull(point, i - 1);
 		}
@@ -291,9 +291,9 @@ export function tppSolve(start, target, polygons, simplify = false) {
 
 		const v1 = polygon[pos];
 		const v2 = polygon[(pos + 1) % polygon.length];
-		
+
 		const reflected = point.reflectSegment(v1, v2);
-		
+
 		const path = queryFull(reflected, i - 1);
 		const last = path[path.length - 2];
 
@@ -311,7 +311,7 @@ export function tppSolve(start, target, polygons, simplify = false) {
 		if (i === 0) {
 			return start;
 		}
-		
+
 		const polygon = polygons[i - 1];
 		const location = locatePoint(point, i - 1);
 

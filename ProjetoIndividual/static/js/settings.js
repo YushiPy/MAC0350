@@ -4,8 +4,8 @@ export const CANVAS_ELEMENT_ID = "drawing-canvas";
 export const INITIAL_UNITS_TO_PIXELS = 300;
 export const INITIAL_CAMERA_POSITION = { x: 0, y: 0 };
 
-export const INITIAL_START_POINT = { x: 0, y: 0};
-export const INITIAL_TARGET_POINT = { x: 1, y: 0};
+export const INITIAL_START_POINT = { x: 0, y: 0 };
+export const INITIAL_TARGET_POINT = { x: 1, y: 0 };
 
 export const INITIAL_POLYGONS = [
 	[{ x: 0.5, y: 0.5 }, { x: 1.5, y: 0.5 }, { x: 1, y: 1 }],

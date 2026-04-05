@@ -13,7 +13,7 @@ function enableSmartNavigation(form) {
 	}
 
 	function getShift(event) {
-		
+
 		if (event.key === "Enter") {
 			return event.shiftKey ? -1 : 1;
 		} else if (event.key === "ArrowUp") {

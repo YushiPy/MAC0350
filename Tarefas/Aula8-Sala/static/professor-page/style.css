@@ -1,4 +1,3 @@
-
 .professor-root p {
 	font-family: Roboto, Arial;
 	margin: 0;
@@ -102,9 +101,10 @@
 	border-radius: 5vh;
 }
 
-.professor-root details > .professor-root summary {
-    cursor: pointer;
-    list-style: none; /* removes default arrow if you want */
+.professor-root details>.professor-root summary {
+	cursor: pointer;
+	list-style: none;
+	/* removes default arrow if you want */
 }
 
 .images-routo {
@@ -121,7 +121,8 @@
 .image-routo {
 	flex: 1;
 	min-width: 0;
-	object-fit: cover; /* or contain, depending on your needs */
+	object-fit: cover;
+	/* or contain, depending on your needs */
 	border: 2px solid rgb(18, 16, 16);
 	border-radius: 5vh;
 }

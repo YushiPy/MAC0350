@@ -1,29 +1,27 @@
-
 {% extends "base.html" %}
 
 {% block head_extra %}
-	<style>
-		
-		button {
-			padding: 10px 20px;
-			font-size: 16px;
-		}
-	</style>
+<style>
+	button {
+		padding: 10px 20px;
+		font-size: 16px;
+	}
+</style>
 
-	<script>
+<script>
 
-		let pageIndex = 0;
+	let pageIndex = 0;
 
-		function getList() {
-			fetch(`/lista?busca=${document.getElementById('searchInput').value}`)
-				.then(response => response.text())
-				.then(html => {
-					document.querySelector('main').innerHTML = html;
-				})
-				.catch(error => console.error('Error fetching list:', error));
-		}
+	function getList() {
+		fetch(`/lista?busca=${document.getElementById('searchInput').value}`)
+			.then(response => response.text())
+			.then(html => {
+				document.querySelector('main').innerHTML = html;
+			})
+			.catch(error => console.error('Error fetching list:', error));
+	}
 
-	</script>
+</script>
 
 {% endblock %}
 
@@ -32,32 +30,26 @@
 <h1>Meu Site</h1>
 <p>Bem vindo ao meu site!</p>
 
-<button hx-get="/lista"
-		hx-target="main">
-		Lista de alunos
+<button hx-get="/lista" hx-target="main">
+	Lista de alunos
 </button>
 
-<button hx-get="/editarAlunos"
-		hx-target="main">
-		Editar lista de alunos
+<button hx-get="/editarAlunos" hx-target="main">
+	Editar lista de alunos
 </button>
 
 <hr>
 
-<main hx-get="/lista"
-		hx-target="main"
-		hx-trigger="load">
+<main hx-get="/lista" hx-target="main" hx-trigger="load">
 </main>
 
 <div style="display: flex; gap: 10px;">
 
-	<button hx-get="/lista?shift=-1"
-		hx-target="main">
+	<button hx-get="/lista?shift=-1" hx-target="main">
 		Anterior
 	</button>
-	
-	<button hx-get="/lista?shift=1"
-		hx-target="main">
+
+	<button hx-get="/lista?shift=1" hx-target="main">
 		Próximo
 	</button>
 </div>

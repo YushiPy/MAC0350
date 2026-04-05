@@ -13,7 +13,6 @@
 	<script src="/static/script.js" defer></script>
 
 	<style>
-
 		.bio-update-section {
 			display: flex;
 			flex-direction: column;
@@ -26,29 +25,29 @@
 			border: 1px solid #ccc;
 			border-radius: 4px;
 		}
-
 	</style>
 
 </head>
+
 <body>
 
 	{% if user %}
-		<h1>Welcome, {{ user.username }}!</h1>
+	<h1>Welcome, {{ user.username }}!</h1>
 
-		{% if user.bio %}
-			<p>Your bio: {{ user.bio }}</p>
-		{% else %}
-			<p>You don't have a bio yet.</p>
-		{% endif %}
+	{% if user.bio %}
+	<p>Your bio: {{ user.bio }}</p>
+	{% else %}
+	<p>You don't have a bio yet.</p>
+	{% endif %}
 
-		<div class="smart-form bio-update-section">
-			<input class="bio-input" type="text" id="new-bio-input" placeholder="Enter your new bio">
-			<button id="update-bio-button" onclick="updateBio()">Update Bio</button>
-		</div>
+	<div class="smart-form bio-update-section">
+		<input class="bio-input" type="text" id="new-bio-input" placeholder="Enter your new bio">
+		<button id="update-bio-button" onclick="updateBio()">Update Bio</button>
+	</div>
 
 	{% else %}
-		Please log in to see your home page.
-		See: <a href="/login">Login</a>
+	Please log in to see your home page.
+	See: <a href="/login">Login</a>
 	{% endif %}
 
 </body>
@@ -72,15 +71,16 @@
 			},
 			body: JSON.stringify({ new_bio: newBio })
 		})
-		.then(response => response.json())
-		.then(data => {
-			location.reload();
-		})
-		.catch(error => {
-			console.error("Error updating bio:", error);
-			alert("An error occurred while updating your bio. Please try again.");
-		});
+			.then(response => response.json())
+			.then(data => {
+				location.reload();
+			})
+			.catch(error => {
+				console.error("Error updating bio:", error);
+				alert("An error occurred while updating your bio. Please try again.");
+			});
 	}
 
 </script>
+
 </html>

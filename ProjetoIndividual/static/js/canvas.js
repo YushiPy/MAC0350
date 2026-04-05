@@ -49,7 +49,7 @@ class Canvas {
 	worldToCanvas(x, y = null) {
 
 		if (x instanceof Object) { y = x.y; x = x.x; }
-		
+
 		return new Vector2(
 			(x - this.camera.x) * this.camera.unitsToPixels + this.canvasCenter.x,
 			-(y - this.camera.y) * this.camera.unitsToPixels + this.canvasCenter.y
@@ -115,7 +115,7 @@ class Canvas {
 
 	drawPoint(canvasPos, color, radius = 5, glow = false) {
 		const ctx = this.ctx;
-		
+
 		ctx.save();
 		ctx.fillStyle = color;
 
@@ -123,11 +123,11 @@ class Canvas {
 			ctx.shadowColor = color;
 			ctx.shadowBlur = radius * 5;
 		}
-		
+
 		ctx.beginPath();
 		ctx.arc(canvasPos.x, canvasPos.y, radius, 0, 2 * Math.PI);
 		ctx.fill();
-	
+
 		ctx.restore();
 	}
 
@@ -138,7 +138,7 @@ class Canvas {
 	drawPolygon(pointsWorld, color, lineWidth = 1, glow = false, dashLength = 0, alpha = 0.3) {
 
 		const points = pointsWorld.map(p => this.worldToCanvas(p));
-		
+
 		if (points.length < 2) return;
 
 		const ctx = this.ctx;
@@ -166,7 +166,7 @@ class Canvas {
 		ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 	}
 
-	get width()  { return this.canvas.offsetWidth; }
+	get width() { return this.canvas.offsetWidth; }
 	get height() { return this.canvas.offsetHeight; }
 	get center() { return this.canvasCenter; }
 }
@@ -326,7 +326,7 @@ class Scene {
 			this.selectionRect = { start: start ?? new Vector2(0, 0), end: end ?? new Vector2(0, 0) };
 		} else {
 			if (start) this.selectionRect.start = start.clone();
-			if (end)   this.selectionRect.end   = end.clone();
+			if (end) this.selectionRect.end = end.clone();
 		}
 		this._findSelectedPoints();
 	}
@@ -343,9 +343,9 @@ class Scene {
 		for (const poly of this.polygons) candidates.push(...poly.points);
 
 		const { start, end } = this.selectionRect;
-		const left   = Math.min(start.x, end.x);
-		const right  = Math.max(start.x, end.x);
-		const top    = Math.min(start.y, end.y);
+		const left = Math.min(start.x, end.x);
+		const right = Math.max(start.x, end.x);
+		const top = Math.min(start.y, end.y);
 		const bottom = Math.max(start.y, end.y);
 
 		for (const candidate of candidates) {
@@ -372,14 +372,14 @@ class Scene {
 		else if (gridScale / 2 > decisionValue) { exponent--; multiplier = 5; }
 
 		const gridSpacing = Math.pow(10, exponent) * multiplier;
-		const halfWidth  = canvas.offsetWidth  / 2 / unitsToPixels;
+		const halfWidth = canvas.offsetWidth / 2 / unitsToPixels;
 		const halfHeight = canvas.offsetHeight / 2 / unitsToPixels;
 
 		const bounds = {
-			left:   cameraCenter.x - halfWidth,
-			right:  cameraCenter.x + halfWidth,
+			left: cameraCenter.x - halfWidth,
+			right: cameraCenter.x + halfWidth,
 			bottom: cameraCenter.y - halfHeight,
-			top:    cameraCenter.y + halfHeight,
+			top: cameraCenter.y + halfHeight,
 		};
 
 		const origin = this.canvas.worldToCanvas(0, 0);
@@ -391,14 +391,14 @@ class Scene {
 			return { pos: raw, dimmed: false };
 		};
 
-		const xAnchor = clampTextAnchor(origin.x - 8, -1, canvas.offsetWidth  - 8);
-		const yAnchor = clampTextAnchor(origin.y + 3,  0, canvas.offsetHeight - 20);
+		const xAnchor = clampTextAnchor(origin.x - 8, -1, canvas.offsetWidth - 8);
+		const yAnchor = clampTextAnchor(origin.y + 3, 0, canvas.offsetHeight - 20);
 		const pow = (e) => Math.pow(10, e);
 
 		const drawAxis = (horizontal) => {
 			const [rangeStart, count, lo, hi] = horizontal
-				? [Math.floor((cameraCenter.y - halfHeight) / gridSpacing) * multiplier, Math.ceil(halfHeight * 2 / gridSpacing), bounds.left,   bounds.right ]
-				: [Math.floor((cameraCenter.x - halfWidth)  / gridSpacing) * multiplier, Math.ceil(halfWidth  * 2 / gridSpacing), bounds.bottom, bounds.top   ];
+				? [Math.floor((cameraCenter.y - halfHeight) / gridSpacing) * multiplier, Math.ceil(halfHeight * 2 / gridSpacing), bounds.left, bounds.right]
+				: [Math.floor((cameraCenter.x - halfWidth) / gridSpacing) * multiplier, Math.ceil(halfWidth * 2 / gridSpacing), bounds.bottom, bounds.top];
 
 			for (let i = 0; i <= count; i++) {
 				const integerPart = rangeStart + i * multiplier;
@@ -422,15 +422,15 @@ class Scene {
 					? this.canvas.worldToCanvas(0, world).y
 					: this.canvas.worldToCanvas(world, 0).x;
 
-				ctx.font      = font;
+				ctx.font = font;
 				ctx.fillStyle = anchor.dimmed ? lightColor : color;
 
 				if (horizontal) {
-					ctx.textAlign    = anchor.pos === -1 ? "left" : "right";
+					ctx.textAlign = anchor.pos === -1 ? "left" : "right";
 					ctx.textBaseline = "middle";
 					ctx.fillText(floatToString(integerPart, exponent), anchor.pos === -1 ? 10 : anchor.pos, screenPos);
 				} else {
-					ctx.textAlign    = "center";
+					ctx.textAlign = "center";
 					ctx.textBaseline = "top";
 					ctx.fillText(floatToString(integerPart, exponent), screenPos, anchor.pos);
 				}
@@ -440,14 +440,14 @@ class Scene {
 		drawAxis(false);
 		drawAxis(true);
 
-		ctx.fillStyle    = color;
-		ctx.font         = font;
-		ctx.textAlign    = "right";
+		ctx.fillStyle = color;
+		ctx.font = font;
+		ctx.textAlign = "right";
 		ctx.textBaseline = "top";
 		ctx.fillText("0", origin.x - 8, origin.y + 3);
 
-		this.canvas.drawLineWorld(new Vector2(bounds.left,   0), new Vector2(bounds.right, 0), settings.MAIN_AXIS_COLOR, settings.MAIN_AXIS_WIDTH);
-		this.canvas.drawLineWorld(new Vector2(0, bounds.bottom), new Vector2(0, bounds.top),   settings.MAIN_AXIS_COLOR, settings.MAIN_AXIS_WIDTH);
+		this.canvas.drawLineWorld(new Vector2(bounds.left, 0), new Vector2(bounds.right, 0), settings.MAIN_AXIS_COLOR, settings.MAIN_AXIS_WIDTH);
+		this.canvas.drawLineWorld(new Vector2(0, bounds.bottom), new Vector2(0, bounds.top), settings.MAIN_AXIS_COLOR, settings.MAIN_AXIS_WIDTH);
 	}
 
 	drawSolution() {
@@ -456,9 +456,9 @@ class Scene {
 			if (!poly.isConvex()) return;
 		}
 
-		const start  = [this.startPoint.x,  this.startPoint.y];
+		const start = [this.startPoint.x, this.startPoint.y];
 		const target = [this.targetPoint.x, this.targetPoint.y];
-		const polys  = this.polygons.map(poly => poly.points.map(v => [v.x, v.y]));
+		const polys = this.polygons.map(poly => poly.points.map(v => [v.x, v.y]));
 
 		let path;
 		try {
@@ -468,7 +468,7 @@ class Scene {
 		}
 
 		for (let i = 0; i < path.length - 1; i++) {
-			const p1 = new Vector2(path[i].x,     path[i].y);
+			const p1 = new Vector2(path[i].x, path[i].y);
 			const p2 = new Vector2(path[i + 1].x, path[i + 1].y);
 			this.canvas.drawLineWorld(p1, p2, settings.SOLUTION_COLOR, 3);
 			this.canvas.drawPointWorld(p1, settings.SOLUTION_COLOR, 6);
@@ -476,11 +476,11 @@ class Scene {
 	}
 
 	drawPolygons() {
-		
+
 		const ctx = this.canvas.ctx;
 
 		for (let i = 0; i < this.polygons.length; i++) {
-			
+
 			const poly = this.polygons[i];
 			const color = poly.color || settings.POLYGON_COLORS[i % settings.POLYGON_COLORS.length];
 			const isSelected = this.currentPolygon % this.polygons.length === i;
@@ -495,9 +495,9 @@ class Scene {
 					new Vector2(0, 0)
 				);
 				const cp = this.canvas.worldToCanvas(center);
-				ctx.font         = "16px sans-serif";
-				ctx.fillStyle    = "red";
-				ctx.textAlign    = "center";
+				ctx.font = "16px sans-serif";
+				ctx.fillStyle = "red";
+				ctx.textAlign = "center";
 				ctx.textBaseline = "middle";
 				ctx.fillText("NOT CONVEX", cp.x, cp.y);
 			}
@@ -527,13 +527,13 @@ class Scene {
 		if (!this.selectionRect) return;
 		const ctx = this.canvas.ctx;
 		const { start, end } = this.selectionRect;
-		const left   = Math.min(start.x, end.x);
-		const top    = Math.min(start.y, end.y);
-		const width  = Math.abs(start.x - end.x);
+		const left = Math.min(start.x, end.x);
+		const top = Math.min(start.y, end.y);
+		const width = Math.abs(start.x - end.x);
 		const height = Math.abs(start.y - end.y);
 
 		ctx.strokeStyle = settings.MAIN_AXIS_COLOR;
-		ctx.lineWidth   = 1.5;
+		ctx.lineWidth = 1.5;
 		ctx.setLineDash([5, 3]);
 		ctx.strokeRect(left, top, width, height);
 		ctx.fillStyle = settings.MAIN_AXIS_COLOR + "66";
@@ -552,7 +552,7 @@ class Scene {
 			ctx.beginPath();
 			ctx.arc(cp.x, cp.y, r, angle, angle + Math.PI * 2);
 			ctx.strokeStyle = settings.MAIN_AXIS_COLOR;
-			ctx.lineWidth   = 2;
+			ctx.lineWidth = 2;
 			ctx.setLineDash([5, 3]);
 			ctx.stroke();
 			ctx.setLineDash([]);
@@ -572,7 +572,7 @@ class Scene {
 		this.drawVertexLine();
 		this.drawSelectionRect();
 		this.drawSelectedPoints();
-		this.canvas.drawPointWorld(this.startPoint,  settings.START_POINT_COLOR,  settings.POINT_RADIUS, true);
+		this.canvas.drawPointWorld(this.startPoint, settings.START_POINT_COLOR, settings.POINT_RADIUS, true);
 		this.canvas.drawPointWorld(this.targetPoint, settings.TARGET_POINT_COLOR, settings.POINT_RADIUS, true);
 
 		if (this.selectionRect) this.updateSelectionRect(null, this.mouseLocation);
@@ -584,7 +584,7 @@ class Scene {
 		for (const id of settings.OVERLAY_ELEMENTS_ID) {
 
 			const overlay = document.getElementById(id);
-			
+
 			if (!overlay) continue;
 
 			const opacity = overlay.style.opacity;
@@ -608,32 +608,32 @@ class Scene {
 
 		return false;
 	}
-	
+
 	_initInput() {
-		
+
 		// Remove old listeners first
 		this._removeInput();
 
 		const canvas = this.canvas.canvas;
 
 		this._boundMouseDown = (e) => this._onMouseDown(e);
-		this._boundMouseUp   = (e) => this._onMouseUp(e);
+		this._boundMouseUp = (e) => this._onMouseUp(e);
 		this._boundMouseMove = (e) => this._onMouseMove(e);
-		this._boundKeyDown   = (e) => this._onKeyDown(e);
-		this._boundKeyUp     = (e) => this._onKeyUp(e);
-		this._boundWheel     = (e) => {
+		this._boundKeyDown = (e) => this._onKeyDown(e);
+		this._boundKeyUp = (e) => this._onKeyUp(e);
+		this._boundWheel = (e) => {
 			e.preventDefault();
 			this.changeZoom(1 - e.deltaY * this.scrollSensitivity, this.mouseLocation);
 		};
 
 		window.addEventListener("blur", () => { this.mouseHeld = false; this.dragging = null; });
 		document.addEventListener("mouseleave", () => { this.mouseHeld = false; this.dragging = null; });
-		canvas.addEventListener("mousedown",  this._boundMouseDown);
-		document.addEventListener("mouseup",    this._boundMouseUp);
-		document.addEventListener("mousemove",  this._boundMouseMove);
-		document.addEventListener("keydown",    this._boundKeyDown);
-		document.addEventListener("keyup",      this._boundKeyUp);
-		canvas.addEventListener("wheel",        this._boundWheel, { passive: false });
+		canvas.addEventListener("mousedown", this._boundMouseDown);
+		document.addEventListener("mouseup", this._boundMouseUp);
+		document.addEventListener("mousemove", this._boundMouseMove);
+		document.addEventListener("keydown", this._boundKeyDown);
+		document.addEventListener("keyup", this._boundKeyUp);
+		canvas.addEventListener("wheel", this._boundWheel, { passive: false });
 
 		this._boundOnSnapping = () => this._updateSnapping(!this.snapping);
 		this._boundOnTriangle = () => this._onTriangle();
@@ -647,11 +647,11 @@ class Scene {
 	_removeInput() {
 		if (!this._boundMouseDown) return;
 
-		document.removeEventListener("mousedown",  this._boundMouseDown);
-		document.removeEventListener("mouseup",    this._boundMouseUp);
-		document.removeEventListener("mousemove",  this._boundMouseMove);
-		document.removeEventListener("keydown",    this._boundKeyDown);
-		document.removeEventListener("keyup",      this._boundKeyUp);
+		document.removeEventListener("mousedown", this._boundMouseDown);
+		document.removeEventListener("mouseup", this._boundMouseUp);
+		document.removeEventListener("mousemove", this._boundMouseMove);
+		document.removeEventListener("keydown", this._boundKeyDown);
+		document.removeEventListener("keyup", this._boundKeyUp);
 		this.canvas.canvas.removeEventListener("wheel", this._boundWheel);
 
 		this.snapButton.removeEventListener("click", this._boundOnSnapping);
@@ -660,7 +660,7 @@ class Scene {
 	}
 
 	_updateSnapping(value) {
-		
+
 		this.snapping = value;
 
 		if (this.snapping) {
@@ -712,7 +712,7 @@ class Scene {
 
 		const pos = this._getCanvasPos(e);
 
-		this.lastClickTime     = performance.now();
+		this.lastClickTime = performance.now();
 		this.lastClickPosition = pos;
 
 		const selectionPoint = this.findDraggablePoint(pos.x, pos.y, [...this.selectedPointsTotal]);
@@ -755,12 +755,12 @@ class Scene {
 		if (!this._isInCanvas(pos)) return;
 
 		const isRecent = performance.now() - this.lastClickTime < 300;
-		const isClose  = this.mouseLocation.distanceTo(this.lastClickPosition) < settings.HIT_RADIUS;
+		const isClose = this.mouseLocation.distanceTo(this.lastClickPosition) < settings.HIT_RADIUS;
 
 		if (isRecent && isClose && this.polygons.length > 0 && !this._isBlockClickActive()) {
-			const clamped    = this.clampToCanvas(this.mouseLocation);
-			const world      = this.snapPoint(this.canvas.canvasToWorld(clamped));
-			const poly       = this.polygons[this.currentPolygon % this.polygons.length];
+			const clamped = this.clampToCanvas(this.mouseLocation);
+			const world = this.snapPoint(this.canvas.canvasToWorld(clamped));
+			const poly = this.polygons[this.currentPolygon % this.polygons.length];
 			poly.points.push(world);
 		}
 	}
@@ -803,23 +803,23 @@ class Scene {
 	}
 
 	_onKeyDown(e) {
-		
+
 		if (this._isOverlayUp()) return;
 
 		if (e.key === "Shift") {
-			this.updateSelectionRect(this.mouseLocation, this.mouseLocation);	
+			this.updateSelectionRect(this.mouseLocation, this.mouseLocation);
 		}
 
-		if (e.key === "ArrowUp")   this.currentPolygon++;
+		if (e.key === "ArrowUp") this.currentPolygon++;
 		if (e.key === "ArrowDown") this.currentPolygon--;
 
 		if (e.key === "Backspace" || e.key === "Delete" || e.key === "x") {
 			this._deleteSelected();
 		}
 
-		if (e.key === "1") {this.snapButton.click();}
-		if (e.key === "2") {this.triangleButton.click();}
-		if (e.key === "3") {this.vertexLineButton.click();}
+		if (e.key === "1") { this.snapButton.click(); }
+		if (e.key === "2") { this.triangleButton.click(); }
+		if (e.key === "3") { this.vertexLineButton.click(); }
 	}
 
 	_onKeyUp(e) {
@@ -911,14 +911,14 @@ class Scene {
 		});
 
 		const json = await response.json();
-		
+
 		return json.id;
 	}
 
 	async updateDrawingData(drawingId, drawingName) {
 
 		const data = this.saveData(drawingName);
-		
+
 		await fetch(`${settings.UPDATE_DRAWING_ENDPOINT_URL}/${drawingId}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -946,10 +946,10 @@ class Scene {
 				unitsToPixels: settings.INITIAL_UNITS_TO_PIXELS,
 			},
 		};
-		
+
 		this.startPoint = new Vector2(data.startPoint);
 		this.targetPoint = new Vector2(data.targetPoint);
-		
+
 		const colors = data.polygonColors || settings.POLYGON_COLORS;
 		this.polygons = data.polygons.map((poly, i) => new Polygon(poly, colors[i % colors.length]));
 

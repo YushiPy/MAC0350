@@ -1,24 +1,16 @@
-
 <div>
-	<input type="text" 
-		name="busca" 
-		placeholder="Buscar..."
-		hx-get="/lista"
-		hx-trigger="input changed delay:500ms"
-		hx-select="#lista"
-		hx-target="#lista"
-		hx-indicator="#indicator">
+	<input type="text" name="busca" placeholder="Buscar..." hx-get="/lista" hx-trigger="input changed delay:500ms"
+		hx-select="#lista" hx-target="#lista" hx-indicator="#indicator">
 
 	<span id="indicator" class="htmx-indicator">Carregando...</span>
-	
+
 </div>
 <div id="lista">
 	<ul>
 		{% for aluno in alunos %}
-			<li>{{ aluno.id }} {{ aluno.nome }}</li>
+		<li>{{ aluno.id }} {{ aluno.nome }}</li>
 		{% else %}
-			<li>Não há alunos</li>
+		<li>Não há alunos</li>
 		{% endfor %}
 	</ul>
 </div>
-

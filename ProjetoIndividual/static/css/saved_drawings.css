@@ -1,4 +1,3 @@
-
 .drawings-overlay {
 	position: fixed;
 	inset: 0;
@@ -41,6 +40,7 @@
 .drawings-header span {
 	font-size: 24px;
 }
+
 .drawings-header button {
 	--bg: var(--accent-color);
 	background: var(--bg);
@@ -121,32 +121,32 @@
 }
 
 .drawing-card {
-    position: relative;
+	position: relative;
 }
 
 .drawing-delete {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    background: rgba(0, 0, 0, 0.45);
-    border: none;
-    border-radius: 6px;
-    color: white;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.15s, background 0.15s;
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	background: rgba(0, 0, 0, 0.45);
+	border: none;
+	border-radius: 6px;
+	color: white;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s, background 0.15s;
 }
 
 .drawing-card:hover .drawing-delete {
-    opacity: 1;
+	opacity: 1;
 }
 
 .drawing-delete:hover {
-    background: rgba(200, 50, 50, 0.85);
+	background: rgba(200, 50, 50, 0.85);
 }
