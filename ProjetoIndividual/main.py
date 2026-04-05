@@ -200,8 +200,9 @@ async def save_drawing(request: Request, session: str | None = Cookie(default=No
 		drawing = Drawing(user_id=user_id, data=data_json.decode())
 		db.add(drawing)
 		db.commit()
+		db.refresh(drawing)
 
-	return HTMLResponse("OK")
+	return JSONResponse({"id": drawing.id})
 
 # Update drawing endpoint
 @app.put("/drawings/{drawing_id}")
@@ -302,3 +303,27 @@ async def get_drawing(request: Request, drawing_id: int, session: str | None = C
 async def get_info(request: Request):
 	return templates.TemplateResponse("tpp_info.html", {"request": request, "static": STATIC_PATH})
 
+@app.delete("/drawings/{drawing_id}")
+async def delete_drawing(drawing_id: int, session: str | None = Cookie(default=None)):
+
+	username = decode_token(session) if session else None
+
+	if username is None:
+		raise HTTPException(status_code=401, detail="Unauthorized")
+
+	with Session(engine) as db:
+
+		user = db.exec(select(User).where(User.username == username)).first()
+
+		if not user:
+			raise HTTPException(status_code=404, detail="User not found")
+
+		drawing = db.exec(select(Drawing).where(Drawing.id == drawing_id, Drawing.user_id == user.id)).first()
+
+		if not drawing:
+			raise HTTPException(status_code=404, detail="Drawing not found")
+
+		db.delete(drawing)
+		db.commit()
+
+	return HTMLResponse("OK")

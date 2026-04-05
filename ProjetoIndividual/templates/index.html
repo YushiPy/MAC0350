@@ -206,9 +206,11 @@
 		const name = input.value.trim();
 		const scene = window.scene;
 
-		await scene.saveToDB(name);
+		const id = await scene.saveToDB(name);
 
 		input.value = "";
+
+		setSavedDrawing(id, name);
 	}
 
 	async function renameDrawing() {
@@ -218,8 +220,10 @@
 		const scene = window.scene;
 
 		await scene.updateDrawingData(drawingId, name);
-
+		
 		input.value = "";
+
+		setSavedDrawing(drawingId, name);
 	}
 
 	async function duplicateDrawing() {
@@ -228,9 +232,11 @@
 		const name = input.value.trim();
 		const scene = window.scene;
 
-		await scene.saveToDB(name);
+		const id = await scene.saveToDB(name);
 
 		input.value = "";
+
+		setSavedDrawing(id, name);
 	}
 
 	const overlays = ["save-prompt", "rename-prompt", "duplicate-prompt"];

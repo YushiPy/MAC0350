@@ -892,14 +892,17 @@ class Scene {
 	}
 
 	async saveToDB(drawingName) {
-
 		const data = this.saveData(drawingName);
 
-		await fetch(settings.SAVE_DRAWING_ENDPOINT_URL, {
+		const response = await fetch(settings.SAVE_DRAWING_ENDPOINT_URL, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: data,
 		});
+
+		const json = await response.json();
+		
+		return json.id;
 	}
 
 	async updateDrawingData(drawingId, drawingName) {
