@@ -1,5 +1,6 @@
 import { Vector2 } from "./vector2.js";
-import { tppSolve } from "./utpp.js";
+import { tppSolve } from "./tpp.js";
+import { convexPartition } from "./convex-partition.js";
 import * as settings from "./settings.js";
 
 const floatToString = (integerPart, exponent) => {
@@ -143,20 +144,40 @@ class Canvas {
 
 		const ctx = this.ctx;
 
+		// Split polygon into convex parts:
+		const partition = convexPartition(points);
+
+		ctx.save();
+		ctx.fillStyle = color;
+		
+		// Draw partition edges dashed
+		for (const part of partition) {
+			for (let i = 0; i < part.length; i++) {
+				this.drawLine(part[i], part[(i + 1) % part.length], color, lineWidth, dashLength + 10, glow);
+			}
+		}
+
+		// Draw original polygon edges solid
 		for (let i = 0; i < points.length; i++) {
 			this.drawLine(points[i], points[(i + 1) % points.length], color, lineWidth, dashLength, glow);
 		}
 
-		ctx.save();
 		ctx.globalAlpha = alpha;
-		ctx.fillStyle = color;
-		ctx.beginPath();
-		ctx.moveTo(points[0].x, points[0].y);
-		for (let i = 1; i < points.length; i++) {
-			ctx.lineTo(points[i].x, points[i].y);
+
+		// Fill in
+		for (const part of partition) {
+
+			ctx.beginPath();
+			ctx.moveTo(part[0].x, part[0].y);
+
+			for (let i = 1; i < part.length; i++) {
+				ctx.lineTo(part[i].x, part[i].y);
+			}
+
+			ctx.closePath();
+			ctx.fill();
 		}
-		ctx.closePath();
-		ctx.fill();
+
 		ctx.restore();
 	}
 
@@ -452,15 +473,12 @@ class Scene {
 
 	drawSolution() {
 
-		for (const poly of this.polygons) {
-			if (!poly.isConvex()) return;
-		}
-
 		const start = [this.startPoint.x, this.startPoint.y];
 		const target = [this.targetPoint.x, this.targetPoint.y];
 		const polys = this.polygons.map(poly => poly.points.map(v => [v.x, v.y]));
 
 		let path;
+
 		try {
 			path = tppSolve(start, target, polys, true);
 		} catch (e) {
@@ -477,8 +495,6 @@ class Scene {
 
 	drawPolygons() {
 
-		const ctx = this.canvas.ctx;
-
 		for (let i = 0; i < this.polygons.length; i++) {
 
 			const poly = this.polygons[i];
@@ -489,22 +505,8 @@ class Scene {
 				this.canvas.drawPointWorld(vertex, color, settings.POINT_RADIUS * 0.6, isSelected);
 			}
 
-			if (!poly.isConvex()) {
-				const center = poly.points.reduce(
-					(acc, p) => new Vector2(acc.x + p.x / poly.points.length, acc.y + p.y / poly.points.length),
-					new Vector2(0, 0)
-				);
-				const cp = this.canvas.worldToCanvas(center);
-				ctx.font = "16px sans-serif";
-				ctx.fillStyle = "red";
-				ctx.textAlign = "center";
-				ctx.textBaseline = "middle";
-				ctx.fillText("NOT CONVEX", cp.x, cp.y);
-			}
-
 			const alpha = settings.POLYGON_INSIDE_ALPHA;
 			this.canvas.drawPolygon(poly.points, color, 2, isSelected, 0, alpha);
-			// this.canvas.drawPolygon(poly.points, settings.MAIN_AXIS_COLOR, settings.GRID_WIDTH, false, 8, 0);
 		}
 	}
 
@@ -710,6 +712,8 @@ class Scene {
 
 		if (this._isOverlayUp()) return;
 
+		this.changedPolygon = false;
+
 		const pos = this._getCanvasPos(e);
 
 		this.lastClickTime = performance.now();
@@ -722,17 +726,20 @@ class Scene {
 		}
 
 		const point = this.findDraggablePoint(pos.x, pos.y);
+		const polyIndex = this.findDraggablePolygon(pos.x, pos.y);
+
 		if (point) {
 			this.dragging = { referencePoint: point.clone(), pointsDragged: [point] };
+			this.changedPolygon = true;
 			return;
 		}
 
-		const polyIndex = this.findDraggablePolygon(pos.x, pos.y);
 		if (polyIndex !== -1) {
 			this.dragging = {
 				referencePoint: this.canvas.canvasToWorld(pos),
 				pointsDragged: this.polygons[polyIndex].points,
 			};
+			this.changedPolygon = polyIndex !== this.currentPolygon % this.polygons.length;
 			this.currentPolygon = polyIndex;
 			return;
 		}
@@ -746,22 +753,23 @@ class Scene {
 
 		this.isDraggingCanvas = false;
 
-		if (this.dragging) {
-			this.dragging = null;
-			return;
-		}
-
 		const pos = this._getCanvasPos(e);
 		if (!this._isInCanvas(pos)) return;
 
 		const isRecent = performance.now() - this.lastClickTime < 300;
 		const isClose = this.mouseLocation.distanceTo(this.lastClickPosition) < settings.HIT_RADIUS;
-
-		if (isRecent && isClose && this.polygons.length > 0 && !this._isBlockClickActive()) {
+		const isSamePolygon = !this.changedPolygon;
+		
+		if (isRecent && isClose && isSamePolygon && this.polygons.length > 0 && !this._isBlockClickActive()) {
 			const clamped = this.clampToCanvas(this.mouseLocation);
 			const world = this.snapPoint(this.canvas.canvasToWorld(clamped));
 			const poly = this.polygons[this.currentPolygon % this.polygons.length];
 			poly.points.push(world);
+		}
+
+		if (this.dragging) {
+			this.dragging = null;
+			return;
 		}
 	}
 
@@ -989,6 +997,8 @@ class Scene {
 		this.lastClickPosition = new Vector2(0, 0);
 		this.lastShiftPressTime = 0;
 		this.lastShiftPosition = new Vector2(0, 0);
+
+		this.changedPolygon = false;
 
 		this._initInput();
 	}

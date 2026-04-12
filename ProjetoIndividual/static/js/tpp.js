@@ -1,5 +1,6 @@
 
 import { Vector2 } from "./vector2.js";
+import { convexPartition } from "./convex-partition.js";
 
 const BINARY_SEACH_THRESHOLD = 15;
 
@@ -127,11 +128,11 @@ function cleanPolygon(polygon) {
 }
 
 
-export function tppSolve(start, target, polygons, simplify = false) {
+export function tppSolveConvex(start, target, polygons, simplify = false) {
 
-	start = new Vector2(...start);
-	target = new Vector2(...target);
-	polygons = polygons.map(polygon => polygon.map(vertex => new Vector2(...vertex)));
+	start = new Vector2(start);
+	target = new Vector2(target);
+	polygons = polygons.map(polygon => polygon.map(vertex => new Vector2(vertex)));
 
 	if (simplify) {
 		polygons = polygons.map(cleanPolygon);
@@ -341,4 +342,122 @@ export function tppSolve(start, target, polygons, simplify = false) {
 	}
 
 	return removeCollinearPoints(queryFull(target, polygons.length));
+}
+
+function convexHull(points) {
+
+	const pts = points.slice().sort((a, b) => a.x - b.x || a.y - b.y);
+	const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+
+	const lower = [];
+
+	for (const p of pts) {
+		while (lower.length >= 2 && cross(lower.at(-2), lower.at(-1), p) <= 0)
+			lower.pop();
+		lower.push(p);
+	}
+
+	const upper = [];
+
+	for (const p of pts.toReversed()) {
+		while (upper.length >= 2 && cross(upper.at(-2), upper.at(-1), p) <= 0)
+			upper.pop();
+		upper.push(p);
+	}
+
+	upper.pop();
+	lower.pop();
+
+	return [...lower, ...upper]; // CCW
+}
+
+function pathLength(path) {
+	
+	let length = 0;
+
+	for (let i = 1; i < path.length; i++) {
+		length += path[i].distanceTo(path[i - 1]);
+	}
+
+	return length;
+}
+
+export function tppSolveBNB(start, target, polygons, simplify = false) {
+	
+	start = new Vector2(start);
+	target = new Vector2(target);
+	polygons = polygons.map(polygon => polygon.map(vertex => new Vector2(vertex)));
+
+	if (simplify) {
+		polygons = polygons.map(cleanPolygon);
+	}
+
+	const convexHulls = polygons.map(convexHull);
+	const convexPartitions = polygons.map(polygon => convexPartition(polygon));
+
+	function lowerBound(instance) {
+
+		const selectedPolygons = instance.map((index, i) => convexPartitions[i][index]);
+		const remainingHulls = convexHulls.slice(instance.length, polygons.length);
+		const inputPolygons = selectedPolygons.concat(remainingHulls);
+
+		try {
+			const path = tppSolveConvex(start, target, inputPolygons);
+			return pathLength(path);
+		} catch (e) {
+			console.log("Error in lower bound calculation:", e);
+			return Infinity;
+		}
+	}
+
+	let minimalPath = null;
+	let minimalPathLength = Infinity;
+
+	let queue = [[]];
+
+	while (queue.length > 0) {
+
+		const current = queue.pop();
+
+		if (current.length == polygons.length) {
+
+			const instance = current.map((index, i) => convexPartitions[i][index]);
+
+			try {
+
+				const path = tppSolveConvex(start, target, instance);
+				const length = path.reduce((sum, point, i) => i > 0 ? sum + point.distanceTo(path[i - 1]) : sum, 0);
+
+				if (length < minimalPathLength) {
+					minimalPath = path;
+					minimalPathLength = length;
+				}
+			} catch (e) {
+				// No path found for this combination, ignore
+			}
+		} else {
+			
+			const i = current.length;
+
+			for (let j = 0; j < convexPartitions[i].length; j++) {
+				
+				const next = current.concat(j);
+				const bound = lowerBound(next);
+
+				if (bound < minimalPathLength) {
+					queue.push(next);
+				}
+			}
+		}
+	}
+	
+	if (minimalPath === null) {
+		throw new Error("No path found.");
+	}
+
+	return minimalPath;
+}
+
+export function tppSolve(start, target, polygons, simplify = false) {
+	return tppSolveBNB(start, target, polygons, simplify);
 }
